@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(150) NOT NULL,
   email VARCHAR(150) UNIQUE NOT NULL,
   phone VARCHAR(50),
-  password_hash VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255),
   role VARCHAR(50) NOT NULL DEFAULT 'farmer', -- 'farmer', 'extension_officer', 'admin'
   location VARCHAR(150),
   latitude NUMERIC(10, 6),

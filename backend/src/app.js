@@ -102,8 +102,8 @@ app.get('/kinde-success', getUser, async (req, res) => {
     } else {
       const newId = `usr-${Date.now()}`;
       const insertRes = await db.query(
-        `INSERT INTO users (id, name, email, role, location, commodity, land_size_ha, is_active)
-         VALUES ($1, $2, $3, 'farmer', 'Ngawi, Jawa Timur', 'Padi', 1.0, TRUE)
+        `INSERT INTO users (id, name, email, password_hash, role, location, commodity, land_size_ha, is_active)
+         VALUES ($1, $2, $3, 'oauth_kinde', 'farmer', 'Ngawi, Jawa Timur', 'Padi', 1.0, TRUE)
          RETURNING *`,
         [newId, name, email]
       );
