@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { Suspense, lazy } from 'react';
+import { Sprout } from 'lucide-react';
 
 // Layouts
 import FarmerLayout from './layouts/FarmerLayout';
@@ -80,8 +81,8 @@ function PublicRoute({ children }) {
 function PlaceholderPage({ title }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full bg-padi-50 flex items-center justify-center mb-4 text-padi-400 text-2xl">
-        🌾
+      <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4 text-emerald-600">
+        <Sprout size={28} />
       </div>
       <h2 className="font-display text-xl text-ink mb-2">{title}</h2>
       <p className="text-sm text-muted max-w-sm">Halaman ini sedang dalam pengembangan. Silakan kembali nanti.</p>

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Menu, X, ChevronRight, ArrowRight, MapPin, Leaf, BarChart2,
-  Bell, Users, BookOpen, CheckCircle, AlertTriangle, Star, ExternalLink,
-  Shield, Zap, TrendingUp, CloudRain
+  Bell, Users, BookOpen, CheckCircle, CheckCircle2, AlertTriangle, Star, ExternalLink,
+  Shield, Zap, TrendingUp, CloudRain, CalendarDays, Info
 } from 'lucide-react';
 import { WeatherIcon } from '../components/WeatherIcons';
 import { RiskBadge } from '../components/ui';
@@ -263,13 +263,13 @@ function HeroWeatherTimeline() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-ink">{day.label}</span>
                 {day.highlight === 'best' && (
-                  <span className="text-xs font-bold text-padi-700 bg-padi-100 px-2 py-0.5 rounded-full">
-                    ✓ Disarankan
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-padi-700 bg-padi-100 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 size={12} className="text-padi-700" /> Disarankan
                   </span>
                 )}
                 {day.highlight === 'danger' && (
-                  <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
-                    ⚠ Hindari
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                    <AlertTriangle size={12} className="text-red-700" /> Hindari
                   </span>
                 )}
               </div>
@@ -298,19 +298,22 @@ function HeroWeatherTimeline() {
 function ProblemSection() {
   const problems = [
     {
-      icon: '📅',
+      icon: <CalendarDays size={24} className="text-amber-600" />,
+      bg: 'bg-amber-50 border-amber-200',
       title: 'Kalender Tanam Tradisional',
-      description: 'Petani sering bergantung pada kalender tanam tradisional yang sudah tidak akurat karena perubahan iklim.',
+      description: 'Petani sering bergantung pada pranata mangsa atau kalender tanam tradisional yang kini bergeser karena perubahan iklim global.',
     },
     {
-      icon: '🌧️',
+      icon: <CloudRain size={24} className="text-blue-600" />,
+      bg: 'bg-blue-50 border-blue-200',
       title: 'Pola Hujan yang Berubah',
-      description: 'Musim hujan semakin tidak dapat diprediksi. Hujan ekstrem datang tak terduga, merusak tanaman yang sudah ditanam.',
+      description: 'Musim hujan semakin tidak dapat diprediksi. Anomali cuaca ekstrem datang tak terduga, meningkatkan risiko gagal panen.',
     },
     {
-      icon: '📊',
+      icon: <TrendingUp size={24} className="text-emerald-600" />,
+      bg: 'bg-emerald-50 border-emerald-200',
       title: 'Data Terlalu Teknis',
-      description: 'Data BMKG akurat, namun sulit dipahami oleh petani biasa. "Curah hujan 42mm" tidak mudah diartikan jadi tindakan.',
+      description: 'Data BMKG sangat akurat, namun format teknis seperti milimeter curah hujan membutuhkan penerjemahan langsung ke aksi di lapangan.',
     },
   ];
 
@@ -330,7 +333,9 @@ function ProblemSection() {
         <div className="grid md:grid-cols-3 gap-6">
           {problems.map((p, i) => (
             <div key={i} className="p-6 rounded-2xl bg-surface border border-border hover:shadow-card transition-shadow">
-              <div className="text-4xl mb-4" aria-hidden="true">{p.icon}</div>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center border mb-4 ${p.bg}`} aria-hidden="true">
+                {p.icon}
+              </div>
               <h3 className="font-display text-xl text-ink mb-2">{p.title}</h3>
               <p className="text-muted text-sm leading-relaxed">{p.description}</p>
             </div>
@@ -580,8 +585,8 @@ function TestimonialsSection() {
           </h2>
         </div>
         <p className="text-center text-muted mb-12 text-sm">
-          <span className="bg-panen-50 border border-panen-200 text-panen-700 px-3 py-1 rounded-full font-semibold text-xs">
-            ⚠ Testimoni Demo — Tokoh fiktif untuk keperluan demonstrasi
+          <span className="inline-flex items-center gap-1.5 bg-panen-50 border border-panen-200 text-panen-800 px-3 py-1 rounded-full font-medium text-xs">
+            <Info size={13} className="text-panen-700" /> Model Simulasi Petani — Ilustrasi penerapan rekomendasi iklim di lapangan
           </span>
         </p>
 

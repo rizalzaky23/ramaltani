@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Clock, ChevronRight } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { SectionHeader } from '../../components/ui';
 import { DEMO_EDUCATION_ARTICLES } from '../../data/mockData';
 
@@ -50,9 +50,14 @@ export default function EducationPage() {
             {/* Render markdown-like content */}
             <div className="whitespace-pre-line">
               {selectedArticle.content?.split('\n').map((line, i) => {
-                if (line.startsWith('## ')) return <h2 key={i} className="font-display text-xl text-ink mt-6 mb-2">{line.replace('## ', '')}</h2>;
-                if (line.startsWith('### ')) return <h3 key={i} className="font-semibold text-ink mt-4 mb-1">{line.replace('### ', '')}</h3>;
-                if (line.startsWith('✅ ') || line.startsWith('- ')) return <div key={i} className="flex items-start gap-2 text-sm my-1"><span className="text-padi-500 mt-0.5">•</span><span>{line.replace('✅ ', '').replace('- ', '')}</span></div>;
+                if (line.match(/^[\u2705\u2713\-•*]\s/)) {
+                  return (
+                    <div key={i} className="flex items-start gap-2 text-sm my-1.5">
+                      <CheckCircle2 size={15} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span>{line.replace(/^[\u2705\u2713\-•*]\s*/, '')}</span>
+                    </div>
+                  );
+                }
                 if (line.startsWith('**')) return <p key={i} className="font-semibold text-ink text-sm">{line.replace(/\*\*/g, '')}</p>;
                 if (line.trim() === '') return <br key={i} />;
                 return <p key={i} className="text-sm leading-relaxed">{line}</p>;

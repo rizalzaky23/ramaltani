@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, AlertTriangle, ChevronDown, Loader, Info, Leaf, CloudSun } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { CheckCircle, AlertTriangle, ChevronDown, Loader, Info, Leaf, CloudSun, Crosshair } from 'lucide-react';
 import { StatusBadge, RiskBadge, ConfidenceBar, SectionHeader, LiveBMKGBadge } from '../../components/ui';
 import { DEMO_CROPS, DEMO_VARIETIES, DEMO_REGIONS, DEMO_RECOMMENDATION } from '../../data/mockData';
 import { recommendationsAPI, weatherAPI } from '../../services/api';
 
 export default function RecommendationPage() {
+  const { coords } = useOutletContext() || {};
+
   const savedUser = (() => {
     try { return JSON.parse(localStorage.getItem('ramaltani_user') || '{}'); } catch { return {}; }
   })();
 
-  const defaultRegion = savedUser.location === 'Ngawi' || savedUser.location === 'reg-009'
-    ? 'reg-009'
-    : 'reg-001';
+  const defaultRegion = coords?.regionId || (
+    savedUser.location === 'Ngawi' || savedUser.location === 'reg-009'
+      ? 'reg-009'
+      : 'reg-001'
+  );
 
   const [form, setForm] = useState({
     regionId: defaultRegion,
@@ -50,8 +55,14 @@ export default function RecommendationPage() {
   };
 
   useEffect(() => {
-    fetchLiveRecommendation();
-  }, []);
+    if (coords?.regionId && coords.regionId !== form.regionId) {
+      const updatedForm = { ...form, regionId: coords.regionId };
+      setForm(updatedForm);
+      fetchLiveRecommendation(updatedForm);
+    } else {
+      fetchLiveRecommendation();
+    }
+  }, [coords?.regionId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,7 +92,14 @@ export default function RecommendationPage() {
 
           <form onSubmit={handleCalculate} className="space-y-4">
             <div>
-              <label htmlFor="regionId" className="form-label">Lokasi (Kabupaten/Kota)</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="regionId" className="form-label mb-0">Lokasi (Kabupaten/Kota)</label>
+                {coords?.isGPS && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <Crosshair size={10} className="text-emerald-600" /> Sesuai GPS
+                  </span>
+                )}
+              </div>
               <select id="regionId" name="regionId" value={form.regionId} onChange={handleChange} className="form-select">
                 {DEMO_REGIONS.map(r => (
                   <option key={r.id} value={r.id}>{r.name}, {r.province}</option>

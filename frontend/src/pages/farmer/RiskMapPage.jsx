@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Info, AlertTriangle, CheckCircle, CloudSun, Loader } from 'lucide-react';
+import { MapPin, Info, AlertTriangle, CheckCircle, CloudSun, Loader, Crosshair } from 'lucide-react';
 import { RiskBadge, SectionHeader, LiveBMKGBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
 import { recommendationsAPI } from '../../services/api';
 
 export default function RiskMapPage() {
+  const { coords } = useOutletContext() || {};
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [riskData, setRiskData] = useState(DEMO_RISK_DATA);
   const [loading, setLoading] = useState(true);
@@ -27,14 +29,34 @@ export default function RiskMapPage() {
     fetchLiveRisk();
   }, []);
 
-  const center = [-7.6, 110.5];
+  // If GPS is active and user hasn't selected a region yet, select the nearest GPS region
+  useEffect(() => {
+    if (coords?.regionId && !selectedRegion && riskData.length > 0) {
+      const match = riskData.find(r => r.regionId === coords.regionId);
+      if (match) setSelectedRegion(match);
+    }
+  }, [coords?.regionId, riskData]);
+
+  const mapCenter = (coords?.latitude && coords?.longitude)
+    ? [coords.latitude, coords.longitude]
+    : [-7.6, 110.5];
 
   return (
     <div className="max-w-6xl mx-auto">
       <SectionHeader
         title="Peta Risiko Wilayah"
         subtitle="Visualisasi risiko cuaca real-time per wilayah berbasis data prakiraan resmi BMKG."
-        action={<LiveBMKGBadge text="BMKG Resmi (Live)" />}
+        action={
+          <div className="flex items-center gap-2">
+            {coords?.isGPS && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                <Crosshair size={12} className="text-emerald-600 animate-pulse" />
+                GPS: {coords.regionName} ({coords.distanceKm} km)
+              </span>
+            )}
+            <LiveBMKGBadge text="BMKG Resmi (Live)" />
+          </div>
+        }
       />
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -42,7 +64,7 @@ export default function RiskMapPage() {
         <div className="lg:col-span-2">
           <div className="card overflow-hidden" style={{ height: '480px' }}>
             <MapContainer
-              center={center}
+              center={mapCenter}
               zoom={9}
               style={{ height: '100%', width: '100%' }}
               aria-label="Peta risiko wilayah"
@@ -51,6 +73,32 @@ export default function RiskMapPage() {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
+              {/* GPS User Marker */}
+              {coords?.latitude && coords?.longitude && (
+                <CircleMarker
+                  center={[coords.latitude, coords.longitude]}
+                  radius={10}
+                  pathOptions={{
+                    color: '#047857',
+                    fillColor: '#10B981',
+                    fillOpacity: 0.9,
+                    weight: 3,
+                  }}
+                >
+                  <Popup>
+                    <div className="font-body text-ink text-xs" style={{ minWidth: 150 }}>
+                      <div className="flex items-center gap-1.5 font-bold text-emerald-800 mb-1">
+                        <Crosshair size={13} className="text-emerald-600" />
+                        <span>Lokasi GPS Anda</span>
+                      </div>
+                      <p className="text-slate-600 leading-snug">
+                        Stasiun Terdekat: <strong>{coords.regionName}</strong> (~{coords.distanceKm} km)
+                      </p>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              )}
 
               {riskData.map((region) => (
                 <CircleMarker
@@ -139,6 +187,11 @@ export default function RiskMapPage() {
                 <div className="flex items-center gap-2">
                   <MapPin size={14} className="text-muted" aria-hidden="true" />
                   <span className="font-semibold text-ink text-sm">{region.regionName}</span>
+                  {coords?.regionId === region.regionId && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                      <Crosshair size={10} className="text-emerald-600" /> GPS
+                    </span>
+                  )}
                 </div>
                 <RiskBadge label={region.label} badge={region.label} />
               </div>

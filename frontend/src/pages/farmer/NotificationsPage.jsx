@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, MessageSquare, Smartphone, Mail, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Bell, MessageSquare, Smartphone, Mail, AlertTriangle, CheckCircle, Info, Check } from 'lucide-react';
 import { SectionHeader, DemoBadge } from '../../components/ui';
 import { DEMO_NOTIFICATIONS, DEMO_ALERTS } from '../../data/mockData';
 
@@ -50,8 +50,12 @@ function NotificationItem({ notif }) {
           }`}>
             {channelIcon[notif.channel]}
             {channelLabel[notif.channel]}
-            {notif.deliveryStatus === 'delivered' && ' ✓ Terkirim'}
           </span>
+          {notif.deliveryStatus === 'delivered' && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+              <Check size={12} strokeWidth={2.5} /> Terkirim
+            </span>
+          )}
           <span className="text-xs text-muted">
             {new Date(notif.sentAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
           </span>

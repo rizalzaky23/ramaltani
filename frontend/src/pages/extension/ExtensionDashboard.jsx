@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, AlertTriangle, BarChart2, CheckCircle, MapPin, Send } from 'lucide-react';
+import { Users, AlertTriangle, BarChart2, CheckCircle, MapPin, Send, X } from 'lucide-react';
 import { SectionHeader, LiveBMKGBadge, RiskBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
 import { recommendationsAPI } from '../../services/api';
@@ -194,7 +194,9 @@ export default function ExtensionDashboard() {
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
               <div className="p-5 border-b border-border flex items-center justify-between">
                 <h3 className="font-display text-lg text-ink">Kirim Broadcast</h3>
-                <button onClick={() => setShowBroadcast(false)} className="text-muted hover:text-ink p-1">✕</button>
+                <button onClick={() => setShowBroadcast(false)} className="text-muted hover:text-ink p-1 rounded-lg transition-colors">
+                  <X size={18} />
+                </button>
               </div>
               <form onSubmit={handleBroadcast} className="p-5 space-y-4">
                 <div>

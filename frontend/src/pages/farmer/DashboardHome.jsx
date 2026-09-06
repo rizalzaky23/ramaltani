@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import {
   Droplets, Wind, Thermometer, CheckCircle, AlertTriangle,
-  ArrowRight, Info, ChevronRight, Bell, Sprout, Radio
+  ArrowRight, Info, ChevronRight, Bell, Sprout, Radio,
+  Crosshair, X
 } from 'lucide-react';
 import { WeatherIcon } from '../../components/WeatherIcons';
 import { StatusBadge, ConfidenceBar, LoadingSkeleton } from '../../components/ui';
@@ -16,26 +17,39 @@ import {
 } from 'recharts';
 
 // ─── Greeting ────────────────────────────────────────────────────────────────
-function Greeting({ user, locationName }) {
+function Greeting({ user, locationName, coords, onOpenGPS }) {
   const hour = new Date().getHours();
   const greet = hour < 11 ? 'Selamat pagi' : hour < 15 ? 'Selamat siang' : 'Selamat sore';
 
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <p className="text-muted text-sm font-medium">
-          {greet}, <span className="text-ink font-bold">{user?.name || 'Petani Indonesia'}</span> 👋
+        <p className="text-slate-500 text-sm font-medium">
+          {greet}, <span className="text-slate-900 font-bold">{user?.name || 'Petani Indonesia'}</span>
         </p>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-muted">{user?.location || locationName || 'Ngawi, Jawa Timur'}</span>
-          <span className="text-muted">·</span>
-          <span className="text-xs text-padi-600 font-semibold">{user?.commodity || 'Padi'} · Musim Tanam 2026</span>
+          <span className="text-xs text-slate-500">
+            {coords?.isGPS
+              ? `${coords.regionName} (${coords.latitude.toFixed(2)}°, ${coords.longitude.toFixed(2)}°)`
+              : (user?.location || locationName || 'Ngawi, Jawa Timur')}
+          </span>
+          <span className="text-slate-300">·</span>
+          <span className="text-xs text-emerald-700 font-semibold">{user?.commodity || 'Padi'} · Musim Tanam 2026</span>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Live API BMKG Aktif
+        <button
+          onClick={onOpenGPS}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition-colors shadow-2xs"
+          title="Sinkronkan dengan sensor lokasi GPS perangkat"
+        >
+          <Crosshair size={13} className={coords?.isGPS ? "text-emerald-600 animate-pulse" : "text-slate-400"} />
+          {coords?.isGPS ? 'Lokasi GPS Aktif' : 'Sinkronkan GPS Lahan'}
+        </button>
+
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-2xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          BMKG Live
         </span>
       </div>
     </div>
@@ -48,22 +62,22 @@ function AlertBanner({ alert }) {
   if (!alert || dismissed) return null;
 
   return (
-    <div className="alert-warning mb-5 animate-fade-in relative" role="alert" aria-live="polite">
-      <AlertTriangle size={18} className="text-panen-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+    <div className="alert-warning mb-5 animate-fade-in relative flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950" role="alert" aria-live="polite">
+      <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold text-panen-700 uppercase tracking-wide">{alert.level || 'WASPADA'}</span>
-          <span className="text-xs text-muted">· {alert.source || 'BMKG'}</span>
+          <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">{alert.level || 'WASPADA'}</span>
+          <span className="text-xs text-slate-500">· {alert.source || 'BMKG'}</span>
         </div>
-        <p className="text-sm font-semibold text-panen-900">{alert.title}</p>
-        <p className="text-xs text-panen-800 mt-0.5 leading-relaxed">{alert.description || alert.message}</p>
+        <p className="text-sm font-semibold text-slate-900">{alert.title}</p>
+        <p className="text-xs text-slate-700 mt-0.5 leading-relaxed">{alert.description || alert.message}</p>
       </div>
       <button
         onClick={() => setDismissed(true)}
-        className="text-panen-600 hover:text-panen-900 p-1 flex-shrink-0"
+        className="text-slate-400 hover:text-slate-700 p-1 flex-shrink-0 transition-colors rounded-lg"
         aria-label="Tutup peringatan"
       >
-        ✕
+        <X size={15} />
       </button>
     </div>
   );
@@ -280,6 +294,9 @@ function QuickStats() {
 // ─── Dashboard Home ────────────────────────────────────────────────────────────
 export default function DashboardHome() {
   const { user } = useAuth();
+  const outletContext = useOutletContext() || {};
+  const { coords, openGPSModal } = outletContext;
+
   const [weather, setWeather] = useState(DEMO_WEATHER);
   const [recommendation, setRecommendation] = useState(DEMO_RECOMMENDATION);
   const [alerts, setAlerts] = useState(DEMO_ALERTS);
@@ -288,23 +305,30 @@ export default function DashboardHome() {
   useEffect(() => {
     async function loadLiveData() {
       try {
-        // Match region ID based on user profile
-        let regionId = 'reg-001'; // Default: Klaten
-        if (user?.regionId) {
-          regionId = user.regionId;
-        } else if (user?.location) {
-          const loc = user.location.toLowerCase();
-          if (loc.startsWith('reg-')) regionId = user.location;
-          else if (loc.includes('ngawi')) regionId = 'reg-009';
-          else if (loc.includes('sleman')) regionId = 'reg-002';
-          else if (loc.includes('bantul')) regionId = 'reg-003';
-          else if (loc.includes('kulon')) regionId = 'reg-004';
-          else if (loc.includes('magelang')) regionId = 'reg-005';
-          else if (loc.includes('karanganyar')) regionId = 'reg-006';
-          else if (loc.includes('sragen')) regionId = 'reg-007';
-          else if (loc.includes('boyolali')) regionId = 'reg-008';
-          else if (loc.includes('klaten')) regionId = 'reg-001';
+        // Priority 1: Detected or manually selected GPS region
+        let regionId = coords?.regionId;
+
+        // Priority 2: Match region ID based on user profile
+        if (!regionId) {
+          if (user?.regionId) {
+            regionId = user.regionId;
+          } else if (user?.location) {
+            const loc = user.location.toLowerCase();
+            if (loc.startsWith('reg-')) regionId = user.location;
+            else if (loc.includes('ngawi')) regionId = 'reg-009';
+            else if (loc.includes('sleman')) regionId = 'reg-002';
+            else if (loc.includes('bantul')) regionId = 'reg-003';
+            else if (loc.includes('kulon')) regionId = 'reg-004';
+            else if (loc.includes('magelang')) regionId = 'reg-005';
+            else if (loc.includes('karanganyar')) regionId = 'reg-006';
+            else if (loc.includes('sragen')) regionId = 'reg-007';
+            else if (loc.includes('boyolali')) regionId = 'reg-008';
+            else if (loc.includes('klaten')) regionId = 'reg-001';
+          }
         }
+
+        // Default fallback
+        if (!regionId) regionId = 'reg-001';
 
         // 1. Fetch live BMKG weather from backend
         const weatherRes = await weatherAPI.getByRegion(regionId);
@@ -339,7 +363,7 @@ export default function DashboardHome() {
     }
 
     loadLiveData();
-  }, [user]);
+  }, [user, coords?.regionId]);
 
   if (loading) {
     return (
@@ -353,7 +377,12 @@ export default function DashboardHome() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
-      <Greeting user={user} locationName={weather?.location?.name} />
+      <Greeting
+        user={user}
+        locationName={weather?.location?.name}
+        coords={coords}
+        onOpenGPS={openGPSModal}
+      />
 
       {/* Active alert banner */}
       {alerts[0] && <AlertBanner alert={alerts[0]} />}
