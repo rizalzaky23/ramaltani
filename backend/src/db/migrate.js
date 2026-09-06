@@ -5,7 +5,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { pool, query } = require('./index');
+const { query, closePool } = require('./index');
 const mockData = require('../data/mockData');
 
 async function migrateAndSeed() {
@@ -217,7 +217,7 @@ async function migrateAndSeed() {
     console.error('❌ Migration failed:', error);
     process.exit(1);
   } finally {
-    await pool.end();
+    await closePool();
   }
 }
 
