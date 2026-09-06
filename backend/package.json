@@ -1,0 +1,19 @@
+{
+  "name": "ramaltani-backend",
+  "version": "1.0.0",
+  "description": "RamalTani — Climate-Smart Farming Decision Platform Backend",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest --testEnvironment node",
+    "test:watch": "jest --watch"
+  },
+  "keywords": ["agriculture", "weather", "farming", "indonesia", "climate"],
+  "author": "RamalTani Team",
+  "license": "MIT",
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.js", "**/*.test.js"]
+  }
+}

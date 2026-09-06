@@ -1,0 +1,318 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface text-ink font-body antialiased;
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display leading-tight;
+  }
+
+  h4, h5, h6, p, button, input, label {
+    @apply font-body;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-padi ring-offset-2;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
+}
+
+/* ─── Components ───────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-body font-semibold
+           px-5 py-2.5 rounded-xl text-sm transition-all duration-200
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-padi-500 text-white hover:bg-padi-600 
+           focus-visible:ring-padi active:bg-padi-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-padi-600 border border-padi-200 
+           hover:bg-padi-50 focus-visible:ring-padi;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-ink hover:bg-padi-50 focus-visible:ring-padi;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+  }
+
+  .btn-sm {
+    @apply px-3.5 py-2 text-xs rounded-lg;
+  }
+
+  .btn-lg {
+    @apply px-7 py-3.5 text-base rounded-2xl;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-border;
+  }
+
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:shadow-card-hover cursor-pointer;
+  }
+
+  .card-body {
+    @apply p-5 sm:p-6;
+  }
+
+  /* Risk Badges */
+  .risk-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold font-body uppercase tracking-wide;
+  }
+
+  .risk-aman {
+    @apply risk-badge bg-padi-50 text-padi-700 border border-padi-200;
+  }
+
+  .risk-perhatian {
+    @apply risk-badge bg-panen-50 text-panen-700 border border-panen-200;
+  }
+
+  .risk-berisiko {
+    @apply risk-badge bg-orange-50 text-orange-700 border border-orange-200;
+  }
+
+  .risk-darurat {
+    @apply risk-badge bg-red-50 text-red-700 border border-red-200;
+  }
+
+  /* Status badges */
+  .status-layak {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+           bg-padi-50 text-padi-800 border border-padi-200;
+  }
+
+  .status-perhatian {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+           bg-panen-50 text-panen-800 border border-panen-200;
+  }
+
+  .status-tunda {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+           bg-orange-50 text-orange-800 border border-orange-200;
+  }
+
+  .status-tidak {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+           bg-red-50 text-red-800 border border-red-200;
+  }
+
+  /* Alert Cards */
+  .alert-card {
+    @apply flex gap-3 p-4 rounded-xl border;
+  }
+
+  .alert-warning {
+    @apply alert-card bg-panen-50 border-panen-200 text-panen-900;
+  }
+
+  .alert-danger {
+    @apply alert-card bg-red-50 border-red-200 text-red-900;
+  }
+
+  .alert-info {
+    @apply alert-card bg-langit-50 border-langit-200 text-langit-900;
+  }
+
+  .alert-success {
+    @apply alert-card bg-padi-50 border-padi-200 text-padi-900;
+  }
+
+  /* Form elements */
+  .form-label {
+    @apply block text-sm font-semibold text-ink mb-1.5;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-2.5 rounded-xl border border-border bg-white text-ink text-sm
+           placeholder:text-muted transition-colors
+           focus:outline-none focus:border-padi-400 focus:ring-2 focus:ring-padi-100;
+  }
+
+  .form-select {
+    @apply form-input cursor-pointer;
+  }
+
+  .form-error {
+    @apply text-xs text-red-600 mt-1;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold
+           text-muted transition-colors hover:text-ink hover:bg-padi-50;
+  }
+
+  .nav-link-active {
+    @apply nav-link bg-padi-50 text-padi-700;
+  }
+
+  /* Section headers */
+  .section-header {
+    @apply mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-display text-ink;
+  }
+
+  .section-subtitle {
+    @apply text-sm text-muted mt-1;
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100
+           bg-[length:200%_100%] rounded-lg;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Garis Musim decorative element */
+  .garis-musim {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .garis-musim::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='60'%3E%3Cpath d='M0,30 Q50,10 100,30 Q150,50 200,30' stroke='%236E9F43' stroke-width='1.5' fill='none' opacity='0.15'/%3E%3Cpath d='M0,45 Q50,25 100,45 Q150,65 200,45' stroke='%233F6B3B' stroke-width='1' fill='none' opacity='0.1'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: 0 bottom;
+    pointer-events: none;
+  }
+
+  /* Mobile bottom nav */
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-border
+           flex items-center justify-around px-2 py-2 z-40 lg:hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-nav-item {
+    @apply flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl
+           text-muted text-xs font-semibold transition-colors;
+  }
+
+  .mobile-nav-item.active {
+    @apply text-padi-600;
+  }
+
+  /* Weather card */
+  .weather-icon-lg {
+    @apply w-16 h-16 flex items-center justify-center;
+  }
+
+  /* Confidence bar */
+  .confidence-bar {
+    @apply h-2 rounded-full bg-border overflow-hidden;
+  }
+
+  .confidence-fill {
+    @apply h-full rounded-full transition-all duration-1000;
+  }
+
+  /* Data source badge */
+  .source-badge {
+    @apply inline-flex items-center gap-1.5 text-xs text-muted font-body;
+  }
+}
+
+/* ─── Utilities ────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Leaflet overrides ─────────────────────────────────────────────────────── */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  border-radius: 16px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(38, 53, 42, 0.15) !important;
+}
+
+.leaflet-popup-content {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 13px !important;
+  margin: 12px 16px !important;
+}
+
+/* ─── Recharts overrides ───────────────────────────────────────────────────── */
+.recharts-tooltip-wrapper {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}

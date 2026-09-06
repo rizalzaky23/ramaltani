@@ -1,0 +1,127 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // RamalTani Core Palette
+        'padi': {
+          DEFAULT: '#6E9F43',
+          50: '#F2F7EC',
+          100: '#E0EDD0',
+          200: '#C3DB9F',
+          300: '#A4C870',
+          400: '#8AB855',
+          500: '#6E9F43',
+          600: '#578033',
+          700: '#426026',
+          800: '#2E4219',
+          900: '#19240D',
+        },
+        'daun': {
+          DEFAULT: '#3F6B3B',
+          50: '#EAF0E9',
+          100: '#D1E0CF',
+          200: '#A5C2A0',
+          300: '#78A471',
+          400: '#5A8C55',
+          500: '#3F6B3B',
+          600: '#32562F',
+          700: '#264023',
+          800: '#192B18',
+          900: '#0D160C',
+        },
+        'langit': {
+          DEFAULT: '#9BC7D4',
+          50: '#F0F7F9',
+          100: '#DAEEF2',
+          200: '#B7DEE6',
+          300: '#9BC7D4',
+          400: '#78B4C5',
+          500: '#5BA3B6',
+          600: '#468695',
+          700: '#346370',
+          800: '#23424A',
+          900: '#122125',
+        },
+        'tanah': {
+          DEFAULT: '#8A684A',
+          50: '#F4EFEA',
+          100: '#E6D9CC',
+          200: '#CCB499',
+          300: '#B39066',
+          400: '#9F7C55',
+          500: '#8A684A',
+          600: '#6E533B',
+          700: '#523E2C',
+          800: '#37291E',
+          900: '#1B150F',
+        },
+        'panen': {
+          DEFAULT: '#D8A83E',
+          50: '#FBF4E1',
+          100: '#F6E8C0',
+          200: '#EDD181',
+          300: '#E4BA41',
+          400: '#D8A83E',
+          500: '#C49228',
+          600: '#9E751F',
+          700: '#785817',
+          800: '#523B10',
+          900: '#2B1F08',
+        },
+        // Neutrals
+        'surface': '#F7F8F3',
+        'ink': '#26352A',
+        'muted': '#6B756D',
+        'border': '#D8DED9',
+      },
+      fontFamily: {
+        'display': ['"DM Serif Display"', 'Georgia', 'serif'],
+        'body': ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
+      backgroundImage: {
+        'garis-musim': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='40'%3E%3Cpath d='M0,20 Q25,5 50,20 Q75,35 100,20' stroke='%236E9F43' stroke-width='1.5' fill='none' opacity='0.25'/%3E%3C/svg%3E\")",
+        'rice-pattern': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='2' fill='%236E9F43' opacity='0.08'/%3E%3C/svg%3E\")",
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'grow-bar': 'growBar 1s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseSoft: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+        growBar: {
+          '0%': { width: '0%' },
+          '100%': { width: 'var(--target-width)' },
+        },
+      },
+      boxShadow: {
+        'card': '0 1px 4px rgba(38, 53, 42, 0.08), 0 2px 12px rgba(38, 53, 42, 0.04)',
+        'card-hover': '0 4px 16px rgba(38, 53, 42, 0.12), 0 1px 4px rgba(38, 53, 42, 0.08)',
+        'alert': '0 0 0 3px rgba(110, 159, 67, 0.15)',
+      },
+      borderRadius: {
+        'xl': '12px',
+        '2xl': '16px',
+        '3xl': '20px',
+      },
+    },
+  },
+  plugins: [],
+}
