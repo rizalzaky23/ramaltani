@@ -17,6 +17,30 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password tidak boleh kosong'),
 });
 
+const registerSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(8, 'Password minimal 8 karakter'),
+  role: z.enum(['farmer', 'extension_officer', 'admin']).optional().default('farmer'),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  commodity: z.string().optional(),
+  landSize: z.union([z.number(), z.string()]).optional(),
+});
+
+// POST /api/auth/register
+router.post('/register', async (req, res, next) => {
+  try {
+    const validatedData = registerSchema.parse(req.body);
+    const result = await authService.registerUser(validatedData);
+
+    return success(res, result, { message: 'Pendaftaran berhasil. Akun Anda telah disimpan di database!' }, 201);
+  } catch (err) {
+    if (err.name === 'ZodError') return next(err);
+    return error(res, 'REGISTER_FAILED', err.message || 'Pendaftaran gagal', 400);
+  }
+});
+
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
   try {

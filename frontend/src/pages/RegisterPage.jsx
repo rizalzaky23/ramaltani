@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Leaf, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Leaf, AlertCircle, CheckCircle, Database } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'farmer' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'farmer',
+    phone: '',
+    location: 'Ngawi, Jawa Timur',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -15,7 +23,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
-      setError('Semua kolom wajib diisi.');
+      setError('Nama, email, dan password wajib diisi.');
       return;
     }
     if (form.password.length < 8) {
@@ -26,34 +34,44 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
-    // Demo: simulate registration by redirecting to login
-    setTimeout(() => {
+    try {
+      const user = await register(form);
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else if (user.role === 'extension_officer') {
+        navigate('/extension');
+      } else {
+        navigate('/app');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Pendaftaran gagal';
+      setError(msg);
+    } finally {
       setLoading(false);
-      navigate('/login', { state: { message: 'Pendaftaran berhasil! Silakan masuk dengan akun demo untuk mencoba platform.' } });
-    }, 1200);
+    }
   };
 
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <div className="mb-8">
+        <div className="mb-6">
           <Link to="/" className="flex items-center gap-2 mb-6">
             <div className="w-9 h-9 rounded-xl bg-padi-500 flex items-center justify-center">
               <Leaf size={18} className="text-white" />
             </div>
             <span className="font-display text-xl font-bold text-ink">Ramal<span className="text-padi-500">Tani</span></span>
           </Link>
-          <h1 className="font-display text-3xl text-ink mb-2">Daftar akun baru</h1>
-          <p className="text-muted text-sm">Mulai gunakan RamalTani secara gratis</p>
+          <h1 className="font-display text-3xl text-ink mb-2">Daftar Akun Baru</h1>
+          <p className="text-muted text-sm">Akun Anda akan tersimpan langsung di database server PostgreSQL</p>
         </div>
 
-        <div className="card card-body mb-4 bg-padi-50 border-padi-200">
+        <div className="card card-body mb-4 bg-padi-50/70 border-padi-200">
           <div className="flex items-start gap-3">
-            <CheckCircle size={18} className="text-padi-600 flex-shrink-0 mt-0.5" />
+            <Database size={18} className="text-padi-600 flex-shrink-0 mt-0.5" />
             <div>
-              <div className="text-sm font-semibold text-ink mb-1">Demo Platform</div>
+              <div className="text-sm font-semibold text-ink mb-0.5">Database Aktif & Terhubung</div>
               <div className="text-xs text-muted leading-relaxed">
-                Ini adalah prototype demo. Gunakan akun demo yang tersedia di halaman login untuk mencoba semua fitur platform.
+                Terhubung ke <code>postgre.rizalzaky.cloud</code>. Akun yang Anda buat langsung tersimpan dan bisa digunakan untuk login kapan saja.
               </div>
             </div>
           </div>
@@ -69,18 +87,28 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label htmlFor="name" className="form-label">Nama Lengkap</label>
-            <input id="name" name="name" type="text" value={form.name} onChange={handleChange} className="form-input" placeholder="Budi Santoso" required />
+            <input id="name" name="name" type="text" value={form.name} onChange={handleChange} className="form-input" placeholder="Bpk. Joko Santoso" required />
           </div>
           <div>
             <label htmlFor="email" className="form-label">Email</label>
-            <input id="email" name="email" type="email" value={form.email} onChange={handleChange} className="form-input" placeholder="nama@contoh.com" required />
+            <input id="email" name="email" type="email" value={form.email} onChange={handleChange} className="form-input" placeholder="joko@petani.id" required />
           </div>
           <div>
-            <label htmlFor="role" className="form-label">Peran</label>
-            <select id="role" name="role" value={form.role} onChange={handleChange} className="form-select">
-              <option value="farmer">Petani</option>
-              <option value="extension_officer">Penyuluh Pertanian</option>
-            </select>
+            <label htmlFor="phone" className="form-label">Nomor WhatsApp / HP (Opsional)</label>
+            <input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} className="form-input" placeholder="+6281234567890" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="role" className="form-label">Peran</label>
+              <select id="role" name="role" value={form.role} onChange={handleChange} className="form-select">
+                <option value="farmer">Petani</option>
+                <option value="extension_officer">Penyuluh (PPL)</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="location" className="form-label">Wilayah</label>
+              <input id="location" name="location" type="text" value={form.location} onChange={handleChange} className="form-input" placeholder="Ngawi, Jatim" />
+            </div>
           </div>
           <div>
             <label htmlFor="password" className="form-label">Password</label>
@@ -94,7 +122,7 @@ export default function RegisterPage() {
 
           <button type="submit" disabled={loading} className="btn btn-primary w-full justify-center mt-2" aria-busy={loading}>
             {loading ? (
-              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Mendaftar...</>
+              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Menyimpan ke Database...</>
             ) : 'Daftar Sekarang'}
           </button>
         </form>

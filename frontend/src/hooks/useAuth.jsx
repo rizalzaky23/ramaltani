@@ -33,6 +33,16 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const register = async (formData) => {
+    const response = await authAPI.register(formData);
+    const { user: userData, token } = response.data.data;
+
+    localStorage.setItem('ramaltani_token', token);
+    localStorage.setItem('ramaltani_user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('ramaltani_token');
     localStorage.removeItem('ramaltani_user');
@@ -42,7 +52,7 @@ export function AuthProvider({ children }) {
   const isRole = (...roles) => user && roles.includes(user.role);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isRole }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,6 @@
 /**
  * Auth Service
- * Handles JWT creation, verification, and PostgreSQL database user authentication
+ * Handles JWT creation, verification, registration, and PostgreSQL database user authentication
  */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -10,6 +10,84 @@ const mockData = require('../data/mockData');
 
 // Demo passwords for all demo accounts
 const DEMO_PASSWORD = 'Demo1234!';
+
+/**
+ * Register a new user in PostgreSQL
+ */
+async function registerUser({ name, email, password, role = 'farmer', phone = '', location = 'Ngawi', commodity = 'Padi', landSize = 1.0 }) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Check if email already exists in DB
+  try {
+    const existing = await db.query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [normalizedEmail]);
+    if (existing.rows.length > 0) {
+      throw new Error('Email sudah terdaftar. Silakan gunakan email lain atau langsung masuk.');
+    }
+  } catch (err) {
+    if (err.message.includes('sudah terdaftar')) throw err;
+    console.warn('⚠️ DB check warning during register:', err.message);
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
+
+  const newId = `usr-${Date.now()}`;
+  const assignedRole = ['farmer', 'extension_officer', 'admin'].includes(role) ? role : 'farmer';
+
+  // Insert into PostgreSQL
+  try {
+    await db.query(
+      `INSERT INTO users (id, name, email, phone, password_hash, role, location, commodity, land_size_ha, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE)`,
+      [
+        newId,
+        name.trim(),
+        normalizedEmail,
+        phone || null,
+        passwordHash,
+        assignedRole,
+        location || 'Ngawi',
+        commodity || 'Padi',
+        parseFloat(landSize) || 1.0,
+      ]
+    );
+    console.log(`✅ User baru terdaftar di PostgreSQL: ${normalizedEmail} (${assignedRole})`);
+  } catch (dbErr) {
+    console.error('❌ Gagal menyimpan user ke database:', dbErr.message);
+    throw new Error('Gagal mendaftarkan akun ke database: ' + dbErr.message);
+  }
+
+  const user = {
+    id: newId,
+    name: name.trim(),
+    email: normalizedEmail,
+    phone: phone || null,
+    role: assignedRole,
+    location: location || 'Ngawi',
+    commodity: commodity || 'Padi',
+    landSize: parseFloat(landSize) || 1.0,
+    isActive: true,
+  };
+
+  // Generate JWT
+  const token = jwt.sign(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    },
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
+  );
+
+  return {
+    user,
+    token,
+    expiresIn: config.jwt.expiresIn,
+  };
+}
 
 /**
  * Authenticate a user with email and password
@@ -104,6 +182,7 @@ async function getUserById(userId) {
 }
 
 module.exports = {
+  registerUser,
   authenticateUser,
   verifyToken,
   getUserById,
