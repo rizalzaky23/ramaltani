@@ -102,6 +102,18 @@ const regions = [
     totalFarmers: 5210,
     totalArea: 6900,
   },
+  {
+    id: 'reg-009',
+    name: 'Ngawi',
+    province: 'Jawa Timur',
+    latitude: -7.4042,
+    longitude: 111.4462,
+    adm4Code: '35.21.01.2001',
+    area: 'Sentra Padi Jawa Timur',
+    mainCrops: ['Padi', 'Jagung', 'Kedelai'],
+    totalFarmers: 9850,
+    totalArea: 14200,
+  },
 ];
 
 // ─── CROPS ────────────────────────────────────────────────────────────────────

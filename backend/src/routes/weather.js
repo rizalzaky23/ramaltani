@@ -15,10 +15,12 @@ const router = express.Router();
 // GET /api/weather/alerts — Get all active alerts
 router.get('/alerts', optionalAuth, async (req, res, next) => {
   try {
-    const activeAlerts = mockData.weatherAlerts.filter(a => a.isActive);
-    return success(res, activeAlerts, {
-      source: 'BMKG',
-      count: activeAlerts.length,
+    const liveAlerts = await weatherService.getLiveWeatherAlerts();
+    return success(res, liveAlerts, {
+      source: 'BMKG Resmi',
+      count: liveAlerts.length,
+      isLive: true,
+      isDemo: false,
     });
   } catch (err) {
     next(err);

@@ -12,6 +12,7 @@ export const DEMO_REGIONS = [
   { id: 'reg-006', name: 'Karanganyar', province: 'Jawa Tengah', latitude: -7.6028, longitude: 111.0167 },
   { id: 'reg-007', name: 'Sragen', province: 'Jawa Tengah', latitude: -7.4264, longitude: 111.0187 },
   { id: 'reg-008', name: 'Boyolali', province: 'Jawa Tengah', latitude: -7.5327, longitude: 110.5988 },
+  { id: 'reg-009', name: 'Ngawi', province: 'Jawa Timur', latitude: -7.4042, longitude: 111.4462 },
 ];
 
 export const DEMO_CROPS = [
@@ -188,4 +189,5 @@ export const DEMO_RISK_DATA = [
   { regionId: 'reg-006', regionName: 'Karanganyar', score: 52, level: 'moderate', label: 'Perlu Perhatian', color: '#D8A83E', affectedFarmers: 128, mainRisk: 'Potensi curah hujan tidak menentu', rainProbability: 68, latitude: -7.6028, longitude: 111.0167 },
   { regionId: 'reg-007', regionName: 'Sragen', score: 44, level: 'moderate', label: 'Perlu Perhatian', color: '#D8A83E', affectedFarmers: 108, mainRisk: 'Potensi curah hujan tidak menentu', rainProbability: 59, latitude: -7.4264, longitude: 111.0187 },
   { regionId: 'reg-008', regionName: 'Boyolali', score: 33, level: 'moderate', label: 'Perlu Perhatian', color: '#D8A83E', affectedFarmers: 58, mainRisk: 'Potensi curah hujan tidak menentu', rainProbability: 48, latitude: -7.5327, longitude: 110.5988 },
+  { regionId: 'reg-009', regionName: 'Ngawi', score: 26, level: 'low', label: 'Aman', color: '#6E9F43', affectedFarmers: 64, mainRisk: 'Kondisi cuaca BMKG relatif kondusif', rainProbability: 35, latitude: -7.4042, longitude: 111.4462 },
 ];

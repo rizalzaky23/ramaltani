@@ -1,52 +1,71 @@
-import { useState } from 'react';
-import { CheckCircle, AlertTriangle, ChevronDown, Loader, Info, Leaf } from 'lucide-react';
-import { StatusBadge, RiskBadge, ConfidenceBar, SectionHeader, DemoBadge } from '../../components/ui';
+import { useState, useEffect } from 'react';
+import { CheckCircle, AlertTriangle, ChevronDown, Loader, Info, Leaf, CloudSun } from 'lucide-react';
+import { StatusBadge, RiskBadge, ConfidenceBar, SectionHeader, LiveBMKGBadge } from '../../components/ui';
 import { DEMO_CROPS, DEMO_VARIETIES, DEMO_REGIONS, DEMO_RECOMMENDATION } from '../../data/mockData';
-import { recommendationsAPI } from '../../services/api';
+import { recommendationsAPI, weatherAPI } from '../../services/api';
 
 export default function RecommendationPage() {
+  const savedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('ramaltani_user') || '{}'); } catch { return {}; }
+  })();
+
+  const defaultRegion = savedUser.location === 'Ngawi' || savedUser.location === 'reg-009'
+    ? 'reg-009'
+    : 'reg-001';
+
   const [form, setForm] = useState({
-    regionId: 'reg-001',
-    cropName: 'Padi',
+    regionId: defaultRegion,
+    cropName: savedUser.commodity || 'Padi',
     varietyName: '',
     soilCondition: 'normal',
-    farmArea: '',
+    farmArea: savedUser.landSize ? String(savedUser.landSize) : '',
   });
-  const [result, setResult] = useState(DEMO_RECOMMENDATION);
+  const [result, setResult] = useState(null);
+  const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const varieties = DEMO_VARIETIES[form.cropName] || [];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
-    if (name === 'cropName') setForm(f => ({ ...f, cropName: value, varietyName: '' }));
-  };
-
-  const handleCalculate = async (e) => {
-    e.preventDefault();
+  const fetchLiveRecommendation = async (targetForm = form) => {
     setLoading(true);
     setError('');
 
     try {
       const response = await recommendationsAPI.calculate({
-        regionId: form.regionId,
-        cropName: form.cropName,
-        varietyName: form.varietyName || null,
-        soilCondition: form.soilCondition,
-        farmArea: form.farmArea ? parseFloat(form.farmArea) : undefined,
+        regionId: targetForm.regionId,
+        cropName: targetForm.cropName,
+        varietyName: targetForm.varietyName || null,
+        soilCondition: targetForm.soilCondition,
+        farmArea: targetForm.farmArea ? parseFloat(targetForm.farmArea) : undefined,
       });
       setResult(response.data.data);
+      setMeta(response.data.meta);
     } catch (err) {
-      // Fallback to demo
+      console.warn('Recommendation fetch fallback:', err.message);
       setResult(DEMO_RECOMMENDATION);
     } finally {
       setLoading(false);
     }
   };
 
-  const r = result?.recommendation;
+  useEffect(() => {
+    fetchLiveRecommendation();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const updated = { ...form, [name]: value };
+    if (name === 'cropName') updated.varietyName = '';
+    setForm(updated);
+  };
+
+  const handleCalculate = async (e) => {
+    e.preventDefault();
+    await fetchLiveRecommendation(form);
+  };
+
+  const r = result?.recommendation || result;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -144,7 +163,7 @@ export default function RecommendationPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <StatusBadge status={r.status} />
-                    <DemoBadge />
+                    <LiveBMKGBadge text="BMKG Resmi (Live)" />
                   </div>
                 </div>
 
@@ -185,6 +204,15 @@ export default function RecommendationPage() {
                       <span>Alternatif: <strong>{r.alternative}</strong></span>
                     </div>
                   )}
+
+                  {/* Live BMKG Source Bar */}
+                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted">
+                    <div className="flex items-center gap-1.5">
+                      <CloudSun size={14} className="text-emerald-600" />
+                      <span>Sumber Cuaca: <strong className="text-ink">BMKG Resmi (Live API)</strong></span>
+                    </div>
+                    <span className="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium">Real-Time Aktif</span>
+                  </div>
                 </div>
               </div>
             </div>

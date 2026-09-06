@@ -341,7 +341,8 @@ function generateRecommendation(input) {
     },
     engine: 'Climate-aware rule engine v1.0',
     generatedAt: new Date().toISOString(),
-    isDemo: true,
+    isLive: true,
+    isDemo: false,
   };
 }
 

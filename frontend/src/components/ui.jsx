@@ -138,9 +138,22 @@ export function SectionHeader({ title, subtitle, action, className = '' }) {
 }
 
 /**
- * Demo watermark badge
+ * Live BMKG Badge
  */
-export function DemoBadge() {
+export function LiveBMKGBadge({ text = 'BMKG Resmi (Live)' }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 font-semibold shadow-xs">
+      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      {text}
+    </span>
+  );
+}
+
+/**
+ * Demo watermark badge (legacy / fallback)
+ */
+export function DemoBadge({ isLive = false }) {
+  if (isLive) return <LiveBMKGBadge />;
   return (
     <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-panen-50 text-panen-700 border border-panen-200 font-semibold">
       Data Demo
@@ -154,8 +167,8 @@ export function DemoBadge() {
 export function DataAttribution() {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted mt-3 pt-3 border-t border-border">
-      <span>Sumber cuaca: <span className="font-semibold text-ink">BMKG</span></span>
-      <span>Data pendukung: <span className="font-semibold text-ink">Open-Meteo</span></span>
+      <span>Sumber cuaca: <span className="font-semibold text-ink">BMKG Resmi (Live API)</span></span>
+      <span>Data pendukung: <span className="font-semibold text-ink">Open-Meteo Global</span></span>
       <span>Peta: <span className="font-semibold text-ink">OpenStreetMap</span></span>
     </div>
   );

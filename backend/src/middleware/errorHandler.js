@@ -11,10 +11,11 @@ function errorHandler(err, req, res, next) {
 
   // Validation errors (Zod)
   if (err.name === 'ZodError') {
+    const issues = err.errors || err.issues || [];
     return error(
       res,
       'VALIDATION_ERROR',
-      'Data tidak valid: ' + err.errors.map(e => e.message).join(', '),
+      'Data tidak valid: ' + issues.map(e => e.message).join(', '),
       422
     );
   }

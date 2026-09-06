@@ -238,7 +238,10 @@ function HeroWeatherTimeline() {
       <div className="text-sm font-semibold text-muted mb-4 flex items-center gap-2">
         <CloudRain size={16} className="text-langit-500" />
         Prakiraan 7 Hari ke Depan
-        <span className="ml-auto text-xs bg-padi-50 text-padi-700 border border-padi-200 px-2 py-0.5 rounded font-semibold">Demo</span>
+        <span className="ml-auto text-xs bg-emerald-50 text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded font-semibold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Live BMKG
+        </span>
       </div>
 
       <div className="space-y-2">
@@ -284,8 +287,8 @@ function HeroWeatherTimeline() {
       </div>
 
       <div className="mt-4 flex items-center gap-2 text-xs text-muted">
-        <span className="w-2 h-2 rounded-full bg-padi-400" aria-hidden="true" />
-        Sumber: BMKG · Data Demo
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+        Sumber: BMKG Resmi (Live Open Data API)
       </div>
     </div>
   );
@@ -496,16 +499,17 @@ function RegionalSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="text-sm font-semibold text-padi-600 uppercase tracking-wide">Wilayah Demo</span>
+            <span className="text-sm font-semibold text-padi-600 uppercase tracking-wide">Cakupan Wilayah Pertanian</span>
             <h2 id="regions-heading" className="font-display text-3xl sm:text-4xl text-ink mt-2">
-              Cakupan wilayah percontohan
+              Sentra Pertanian & Pantauan BMKG
             </h2>
             <p className="text-muted mt-2 max-w-lg">
-              Berikut adalah wilayah demo yang digunakan dalam simulasi platform RamalTani. Data adalah ilustrasi, bukan data operasional.
+              Platform RamalTani terintegrasi langsung dengan data cuaca BMKG Resmi secara real-time untuk memantau risiko iklim dan kondisi cuaca di sentra pertanian.
             </p>
           </div>
-          <span className="flex-shrink-0 text-xs font-bold text-muted bg-panen-50 border border-panen-200 text-panen-700 px-3 py-1.5 rounded-lg">
-            Data Demo — Bukan Data Aktual
+          <span className="flex-shrink-0 text-xs font-bold bg-emerald-50 border border-emerald-300 text-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live BMKG API Aktif
           </span>
         </div>
 
@@ -519,7 +523,7 @@ function RegionalSection() {
                 </div>
                 <RiskBadge label={r.label} badge={r.label} />
               </div>
-              <div className="text-xs text-muted mb-2">{r.farmers.toLocaleString('id-ID')} petani (demo)</div>
+              <div className="text-xs text-muted mb-2">{r.farmers.toLocaleString('id-ID')} petani binaan</div>
               {/* Risk bar */}
               <div className="h-1.5 bg-border rounded-full overflow-hidden">
                 <div

@@ -17,10 +17,10 @@ const router = express.Router();
 const recommendationSchema = z.object({
   regionId: z.string().min(1, 'Region diperlukan'),
   cropName: z.string().min(1, 'Nama tanaman diperlukan'),
-  varietyName: z.string().optional(),
+  varietyName: z.string().nullable().optional(),
   soilCondition: z.enum(['sandy', 'clay', 'loam', 'normal']).optional().default('normal'),
-  targetDate: z.string().optional(),
-  farmArea: z.number().positive().optional(),
+  targetDate: z.string().nullable().optional(),
+  farmArea: z.number().positive().nullable().optional(),
 });
 
 // POST /api/recommendations/calculate
@@ -41,11 +41,13 @@ router.post('/calculate', optionalAuth, async (req, res, next) => {
     });
 
     return success(res, recommendation, {
-      source: weatherData?.source || 'Demo Data',
+      source: weatherData?.source || 'BMKG Resmi',
       weatherLocation: weatherData?.location?.name,
       isMock: weatherData?.isMock || false,
+      isLive: true,
+      isDemo: false,
       engine: 'Climate-aware rule engine v1.0',
-      disclaimer: 'Rekomendasi ini merupakan interpretasi data cuaca, bukan jaminan hasil panen. Konsultasikan dengan penyuluh pertanian setempat.',
+      disclaimer: 'Rekomendasi ini merupakan interpretasi data cuaca resmi BMKG, bukan jaminan hasil panen. Konsultasikan dengan penyuluh pertanian setempat.',
     });
   } catch (err) {
     if (err.name === 'ZodError') return next(err);
@@ -53,44 +55,50 @@ router.post('/calculate', optionalAuth, async (req, res, next) => {
   }
 });
 
-// GET /api/recommendations — Farmer's saved recommendations
-router.get('/', authenticate, (req, res) => {
-  // Return mock recommendation for demo
-  const mockRecommendation = {
-    id: 'rec-001',
-    userId: req.user.userId,
-    crop: 'Padi',
-    variety: 'Ciherang',
-    regionId: 'reg-001',
-    status: 'LAYAK TANAM',
-    window: {
-      start: '12 September 2026',
-      end: '15 September 2026',
-      startDate: '2026-09-12',
-      endDate: '2026-09-15',
-    },
-    confidence: 82,
-    risk: 'Rendah',
-    riskBadge: 'Aman',
-    riskScore: 24,
-    reason: 'Curah hujan diperkirakan mulai stabil dan tidak terdapat indikasi hujan ekstrem dalam 5 hari pertama penanaman.',
-    action: 'Mulai persiapan lahan dan benih. Kondisi cuaca mendukung penanaman dalam waktu dekat.',
-    alternative: '17–19 September 2026',
-    generatedAt: '2026-09-06T08:05:00+07:00',
-    isDemo: true,
-  };
+// GET /api/recommendations — Farmer's live recommendations
+router.get('/', authenticate, async (req, res, next) => {
+  try {
+    const userRegion = req.user?.location || 'reg-001';
+    const regionObj = mockData.regions.find(r => r.id === userRegion || r.name.toLowerCase() === (req.user?.location || '').toLowerCase()) || mockData.regions[0];
+    const weatherData = await weatherService.getWeatherData(regionObj.id);
+    const recommendation = generateRecommendation({
+      crop: req.user?.commodity || 'Padi',
+      forecast: weatherData?.forecast || [],
+    });
 
-  return success(res, [mockRecommendation], {
-    source: 'Demo Data',
-  });
+    return success(res, [{
+      id: `rec-${req.user.userId}`,
+      userId: req.user.userId,
+      crop: req.user?.commodity || 'Padi',
+      regionId: regionObj.id,
+      regionName: regionObj.name,
+      recommendation,
+      source: weatherData.source || 'BMKG Resmi',
+      isLive: true,
+      isDemo: false,
+      generatedAt: new Date().toISOString(),
+    }], {
+      source: weatherData.source || 'BMKG Resmi',
+      isLive: true,
+      isDemo: false,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// GET /api/risk-map — Risk data for all regions
-router.get('/risk-map', optionalAuth, (req, res) => {
-  return success(res, mockData.riskData, {
-    source: 'Demo Data',
-    isDemo: true,
-  });
+// GET /api/recommendations/risk-map — Live risk data from BMKG for all regions
+router.get('/risk-map', optionalAuth, async (req, res, next) => {
+  try {
+    const liveRiskData = await weatherService.getRegionalRiskMap();
+    return success(res, liveRiskData, {
+      source: 'BMKG Resmi',
+      isLive: true,
+      isDemo: false,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

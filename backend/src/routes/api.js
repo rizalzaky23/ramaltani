@@ -470,11 +470,17 @@ router.post('/broadcast', authenticate, requireRole('extension_officer', 'admin'
 
 // ─── RISK MAP ────────────────────────────────────────────────────────────────
 
-router.get('/risk-map', optionalAuth, (req, res) => {
-  return success(res, mockData.riskData, {
-    source: 'Demo Data',
-    isDemo: true,
-  });
+router.get('/risk-map', optionalAuth, async (req, res, next) => {
+  try {
+    const liveRiskData = await weatherService.getRegionalRiskMap();
+    return success(res, liveRiskData, {
+      source: 'BMKG Resmi',
+      isLive: true,
+      isDemo: false,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────

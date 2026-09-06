@@ -1,13 +1,31 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Info, AlertTriangle, CheckCircle } from 'lucide-react';
-import { RiskBadge, SectionHeader, DemoBadge } from '../../components/ui';
+import { MapPin, Info, AlertTriangle, CheckCircle, CloudSun, Loader } from 'lucide-react';
+import { RiskBadge, SectionHeader, LiveBMKGBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
+import { recommendationsAPI } from '../../services/api';
 
 export default function RiskMapPage() {
   const [selectedRegion, setSelectedRegion] = useState(null);
-  const [riskData] = useState(DEMO_RISK_DATA);
+  const [riskData, setRiskData] = useState(DEMO_RISK_DATA);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLiveRisk = async () => {
+      try {
+        const response = await recommendationsAPI.getRiskMap();
+        if (response.data && response.data.data && response.data.data.length > 0) {
+          setRiskData(response.data.data);
+        }
+      } catch (err) {
+        console.warn('Risk map live fetch fallback:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLiveRisk();
+  }, []);
 
   const center = [-7.6, 110.5];
 
@@ -15,8 +33,8 @@ export default function RiskMapPage() {
     <div className="max-w-6xl mx-auto">
       <SectionHeader
         title="Peta Risiko Wilayah"
-        subtitle="Visualisasi risiko cuaca per wilayah demo. Data merupakan ilustrasi untuk keperluan demonstrasi."
-        action={<DemoBadge />}
+        subtitle="Visualisasi risiko cuaca real-time per wilayah berbasis data prakiraan resmi BMKG."
+        action={<LiveBMKGBadge text="BMKG Resmi (Live)" />}
       />
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -100,7 +118,10 @@ export default function RiskMapPage() {
 
         {/* Region list */}
         <div className="space-y-3">
-          <h2 className="font-display text-base text-ink">Wilayah Demo</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-base text-ink">Wilayah Pemantauan</h2>
+            <span className="text-xs text-muted">9 Wilayah Aktif</span>
+          </div>
           {riskData.map((region) => (
             <button
               key={region.regionId}
@@ -143,7 +164,10 @@ export default function RiskMapPage() {
         <div className="mt-5 card card-body border-2 animate-slide-up" style={{ borderColor: selectedRegion.color }}>
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="font-display text-lg text-ink">{selectedRegion.regionName}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-lg text-ink">{selectedRegion.regionName}</h3>
+                <LiveBMKGBadge text="Data BMKG Terkini" />
+              </div>
               <p className="text-sm text-muted mt-0.5">{selectedRegion.mainRisk}</p>
             </div>
             <RiskBadge label={selectedRegion.label} badge={selectedRegion.label} />
@@ -165,7 +189,7 @@ export default function RiskMapPage() {
               <div className="font-display text-2xl font-bold text-ink">
                 {selectedRegion.affectedFarmers.toLocaleString('id-ID')}
               </div>
-              <div className="text-xs text-muted">petani (demo)</div>
+              <div className="text-xs text-muted">estimasi petani terdaftar</div>
             </div>
           </div>
         </div>

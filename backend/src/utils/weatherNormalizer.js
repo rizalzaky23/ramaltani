@@ -4,69 +4,108 @@
  */
 
 /**
- * Normalize BMKG forecast response to internal format
+ * Normalize real BMKG forecast response to internal format
  * @param {Object} bmkgResponse - Raw BMKG API response
  * @param {string} regionName - Region name for context
  * @returns {Object} Normalized weather data
  */
 function normalizeBMKGResponse(bmkgResponse, regionName) {
   try {
-    if (!bmkgResponse || !bmkgResponse.data) {
-      throw new Error('Invalid BMKG response structure');
+    if (!bmkgResponse) throw new Error('Empty BMKG response');
+
+    const rootLokasi = bmkgResponse.lokasi || {};
+    const regionData = Array.isArray(bmkgResponse.data) ? bmkgResponse.data[0] : (bmkgResponse.data || {});
+    const lokasi = regionData.lokasi || rootLokasi;
+    const rawCuaca = regionData.cuaca || [];
+
+    // Flatten all time points across all days (BMKG provides array of days containing 3-hourly time points)
+    const flatPoints = (rawCuaca.flat ? rawCuaca.flat(2) : [].concat(...rawCuaca));
+
+    if (!flatPoints || flatPoints.length === 0) {
+      throw new Error('No weather forecast points found in BMKG response');
     }
 
-    const data = bmkgResponse.data;
-    const lokasi = data.lokasi || {};
-    const cuaca = data.cuaca || [];
+    // Group by date (YYYY-MM-DD)
+    const byDate = {};
+    for (const pt of flatPoints) {
+      const dStr = (pt.local_datetime || pt.datetime || "").split(" ")[0].split("T")[0];
+      if (!dStr) continue;
+      if (!byDate[dStr]) byDate[dStr] = [];
+      byDate[dStr].push(pt);
+    }
 
-    // Flatten cuaca array (BMKG returns nested arrays by day)
-    const flatForecasts = cuaca.flat ? cuaca.flat() : [].concat(...cuaca);
+    const forecast = Object.entries(byDate).map(([date, points]) => {
+      const temps = points.map(p => p.t).filter(v => typeof v === 'number');
+      const tMin = temps.length ? Math.min(...temps) : 23;
+      const tMax = temps.length ? Math.max(...temps) : 33;
+      const tAvg = temps.length ? Math.round(temps.reduce((a, b) => a + b, 0) / temps.length) : 28;
 
-    const forecast = flatForecasts.slice(0, 10).map((item) => {
-      const localDate = item.local_datetime || item.utc_datetime;
-      const date = localDate ? localDate.split(' ')[0] : new Date().toISOString().split('T')[0];
+      const hus = points.map(p => p.hu).filter(v => typeof v === 'number');
+      const huAvg = hus.length ? Math.round(hus.reduce((a, b) => a + b, 0) / hus.length) : 80;
+
+      const wss = points.map(p => p.ws).filter(v => typeof v === 'number');
+      const wsMax = wss.length ? Math.max(...wss) : 10;
+
+      const tps = points.map(p => p.tp).filter(v => typeof v === 'number');
+      const rainfallSum = tps.length ? parseFloat(tps.reduce((a, b) => a + b, 0).toFixed(1)) : 0;
+
+      // Pick midday or representative weather point
+      const midday = points.find(p => (p.local_datetime || '').includes('12:00') || (p.local_datetime || '').includes('15:00'))
+        || points[Math.floor(points.length / 2)]
+        || points[0];
+
+      const wCode = mapBMKGWeatherCode(midday.weather || 1);
+      const isRainy = (midday.weather >= 60 && midday.weather <= 97) || rainfallSum > 0;
+      const rainProb = rainfallSum > 10 ? 90 : rainfallSum > 2 ? 75 : isRainy ? 65 : 20;
+
+      const desc = translateBMKGWeather(midday.weather_desc || '');
 
       return {
         date,
         dateLabel: formatDateLabel(date),
-        description: translateBMKGWeather(item.weather_desc || ''),
-        weatherCode: mapBMKGWeatherCode(item.weather || 0),
-        rainProbability: parseInt(item.hujan_persen || item.hu || 0),
-        rainfallMm: parseFloat(item.curah_hujan || 0),
-        temperature: parseFloat(item.t || item.tmax || 28),
-        temperatureMin: parseFloat(item.tmin || (item.t - 4) || 24),
-        temperatureMax: parseFloat(item.tmax || (item.t + 2) || 30),
-        humidity: parseInt(item.rh || 75),
-        windSpeed: parseFloat(item.ws_ms || item.ws || 10) * 3.6, // m/s to km/h
-        soilMoisture: estimateSoilMoisture(parseInt(item.rh || 75), parseFloat(item.curah_hujan || 0)),
+        description: desc,
+        weatherDesc: desc,
+        weatherCode: wCode,
+        temperature: tAvg,
+        temperatureC: tAvg,
+        temperatureMin: tMin,
+        temperatureMax: tMax,
+        humidity: huAvg,
+        windSpeed: parseFloat((wsMax).toFixed(1)),
+        rainfallMm: rainfallSum,
+        rainProbability: rainProb,
+        soilMoisture: estimateSoilMoisture(huAvg, rainfallSum),
+        iconUrl: midday.image || null,
+        rawBMKGCode: midday.weather,
       };
     });
 
     return {
       location: {
-        name: regionName || lokasi.desa || lokasi.kecamatan || 'Unknown',
-        province: lokasi.provinsi || '',
+        name: regionName || lokasi.kotkab || lokasi.desa || 'Wilayah Pertanian',
+        province: lokasi.provinsi || 'Jawa',
+        district: lokasi.kecamatan || '',
+        village: lokasi.desa || '',
         latitude: parseFloat(lokasi.lat || 0),
         longitude: parseFloat(lokasi.lon || 0),
+        adm4: lokasi.adm4 || '',
       },
       current: forecast[0] || null,
       forecast,
       source: 'BMKG',
-      lastUpdated: new Date().toISOString(),
+      sourceAttribution: 'Badan Meteorologi, Klimatologi, dan Geofisika (BMKG Resmi)',
       isLive: true,
+      isDemo: false,
+      lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
+    console.warn('⚠️ normalizeBMKGResponse error:', error.message);
     return null;
   }
 }
 
 /**
  * Normalize Open-Meteo response to internal format
- * @param {Object} openMeteoResponse - Raw Open-Meteo response
- * @param {string} locationName - Location name
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @returns {Object} Normalized weather data
  */
 function normalizeOpenMeteoResponse(openMeteoResponse, locationName, lat, lon) {
   try {
@@ -96,15 +135,17 @@ function normalizeOpenMeteoResponse(openMeteoResponse, locationName, lat, lon) {
 
     return {
       location: {
-        name: locationName || 'Unknown',
+        name: locationName || 'Wilayah Pertanian',
         latitude: lat || 0,
         longitude: lon || 0,
       },
       current: forecast[0] || null,
       forecast,
       source: 'Open-Meteo',
+      sourceAttribution: 'Open-Meteo Global Weather Service',
       lastUpdated: new Date().toISOString(),
       isLive: true,
+      isDemo: false,
     };
   } catch (error) {
     return null;
@@ -117,19 +158,19 @@ function normalizeOpenMeteoResponse(openMeteoResponse, locationName, lat, lon) {
 function translateBMKGWeather(desc) {
   const map = {
     'Cerah': 'Cerah',
-    'Cerah Berawan': 'Cerah berawan',
+    'Cerah Berawan': 'Cerah Berawan',
     'Berawan': 'Berawan',
-    'Berawan Tebal': 'Berawan tebal',
-    'Hujan Ringan': 'Hujan ringan',
-    'Hujan Sedang': 'Hujan sedang',
-    'Hujan Lebat': 'Hujan lebat',
-    'Hujan Lokal': 'Hujan lokal',
-    'Hujan Petir': 'Hujan disertai petir',
-    'Asap': 'Kabut asap',
+    'Berawan Tebal': 'Berawan Tebal',
+    'Hujan Ringan': 'Hujan Ringan',
+    'Hujan Sedang': 'Hujan Sedang',
+    'Hujan Lebat': 'Hujan Lebat',
+    'Hujan Lokal': 'Hujan Lokal',
+    'Hujan Petir': 'Hujan Petir',
+    'Asap': 'Kabut Asap',
     'Kabut': 'Berkabut',
-    'Udara Kabur': 'Udara berkabur',
+    'Udara Kabur': 'Udara Kabur',
   };
-  return map[desc] || desc || 'Tidak tersedia';
+  return map[desc] || desc || 'Cerah Berawan';
 }
 
 /**
@@ -142,6 +183,7 @@ function mapBMKGWeatherCode(code) {
     2: 'partly_cloudy',
     3: 'cloudy',
     4: 'thick_cloud',
+    10: 'foggy',
     45: 'foggy',
     60: 'light_rain',
     61: 'light_rain',
@@ -161,19 +203,19 @@ function mapBMKGWeatherCode(code) {
  */
 function mapOpenMeteoWMOCode(code) {
   if (code === 0) return 'Cerah';
-  if (code <= 2) return 'Cerah berawan';
+  if (code <= 2) return 'Cerah Berawan';
   if (code <= 3) return 'Berawan';
   if (code <= 19) return 'Berkabut';
-  if (code <= 29) return 'Hujan ringan';
-  if (code <= 39) return 'Badai debu';
+  if (code <= 29) return 'Hujan Ringan';
+  if (code <= 39) return 'Badai Debu';
   if (code <= 49) return 'Berkabut';
   if (code <= 59) return 'Gerimis';
-  if (code <= 65) return code >= 63 ? 'Hujan lebat' : 'Hujan ringan';
-  if (code <= 75) return 'Hujan salju';
-  if (code <= 79) return 'Hujan es';
-  if (code <= 84) return code >= 82 ? 'Hujan lebat' : 'Hujan ringan';
-  if (code <= 90) return 'Hujan petir';
-  if (code <= 99) return 'Hujan petir lebat';
+  if (code <= 65) return code >= 63 ? 'Hujan Lebat' : 'Hujan Ringan';
+  if (code <= 75) return 'Hujan Salju';
+  if (code <= 79) return 'Hujan Es';
+  if (code <= 84) return code >= 82 ? 'Hujan Lebat' : 'Hujan Ringan';
+  if (code <= 90) return 'Hujan Petir';
+  if (code <= 99) return 'Hujan Petir Lebat';
   return 'Tidak tersedia';
 }
 
@@ -221,6 +263,7 @@ module.exports = {
   translateBMKGWeather,
   mapBMKGWeatherCode,
   mapOpenMeteoWMOCode,
+  mapOpenMeteoCodeToInternal,
   estimateSoilMoisture,
   formatDateLabel,
 };
