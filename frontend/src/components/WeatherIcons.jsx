@@ -117,7 +117,19 @@ export function WindyIcon({ size = 48, className = '' }) {
 /**
  * Map weather code to icon component
  */
-export function WeatherIcon({ code, size = 48, className = '' }) {
+export function WeatherIcon({ code, iconUrl, size = 48, className = '' }) {
+  if (iconUrl) {
+    return (
+      <img
+        src={iconUrl}
+        alt={code || 'Cuaca BMKG'}
+        style={{ width: size, height: size }}
+        className={`object-contain flex-shrink-0 ${className}`}
+        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+      />
+    );
+  }
+
   const icons = {
     sunny: SunnyIcon,
     partly_cloudy: PartlyCloudyIcon,

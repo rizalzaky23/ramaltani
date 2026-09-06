@@ -83,12 +83,12 @@ function WeatherCard({ weather }) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {weather?.source || 'BMKG Resmi'}
             </span>
-            <span className="text-xs text-muted">
-              {weather?.location?.name || 'Klaten'}
+            <span className="text-xs text-muted font-medium">
+              {weather?.location?.subdistrict ? `${weather.location.subdistrict}, ${weather.location.city || weather.location.name}` : (weather?.location?.name || 'Klaten')}
             </span>
           </div>
         </div>
-        <WeatherIcon code={current.weatherCode} size={42} />
+        <WeatherIcon code={current.weatherCode} iconUrl={current.iconUrl} size={48} />
       </div>
 
       <div className="flex items-end gap-4 mt-2">
@@ -215,7 +215,7 @@ function ForecastTimeline({ weather }) {
               role="listitem"
             >
               <span className="text-xs font-semibold text-muted text-center leading-tight">{day.dateLabel}</span>
-              <WeatherIcon code={day.weatherCode} size={32} />
+              <WeatherIcon code={day.weatherCode} iconUrl={day.iconUrl} size={32} />
               <span className="text-sm font-bold text-ink">{day.temperature}°C</span>
               <span className={`text-xs font-semibold ${
                 day.rainProbability > 70 ? 'text-red-600' :

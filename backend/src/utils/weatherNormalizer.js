@@ -80,19 +80,54 @@ function normalizeBMKGResponse(bmkgResponse, regionName) {
       };
     });
 
+    // Find point closest to right now (current hour observation)
+    const now = new Date();
+    let closestPoint = flatPoints[0];
+    let minDiff = Infinity;
+    for (const p of flatPoints) {
+      const pTime = new Date(p.datetime || p.utc_datetime).getTime();
+      const diff = Math.abs(pTime - now.getTime());
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestPoint = p;
+      }
+    }
+
+    const currentDesc = translateBMKGWeather(closestPoint?.weather_desc || '');
+    const current = closestPoint ? {
+      date: closestPoint.local_datetime?.split(' ')[0] || forecast[0]?.date,
+      time: closestPoint.local_datetime?.split(' ')[1]?.slice(0, 5) || '00:00',
+      localDatetime: closestPoint.local_datetime,
+      description: currentDesc,
+      weatherDesc: currentDesc,
+      weatherCode: mapBMKGWeatherCode(closestPoint.weather || 1),
+      temperature: closestPoint.t ?? forecast[0]?.temperature,
+      temperatureC: closestPoint.t ?? forecast[0]?.temperature,
+      temperatureMin: forecast[0]?.temperatureMin,
+      temperatureMax: forecast[0]?.temperatureMax,
+      humidity: closestPoint.hu ?? forecast[0]?.humidity,
+      windSpeed: closestPoint.ws ?? forecast[0]?.windSpeed,
+      windDirection: closestPoint.wd || '',
+      rainfallMm: closestPoint.tp || 0,
+      rainProbability: forecast[0]?.rainProbability ?? 20,
+      iconUrl: closestPoint.image || forecast[0]?.iconUrl,
+      rawBMKGCode: closestPoint.weather,
+    } : (forecast[0] || null);
+
     return {
       location: {
         name: regionName || lokasi.kotkab || lokasi.desa || 'Wilayah Pertanian',
-        province: lokasi.provinsi || 'Jawa',
-        district: lokasi.kecamatan || '',
+        city: lokasi.kotkab || '',
+        subdistrict: lokasi.kecamatan || '',
         village: lokasi.desa || '',
+        province: lokasi.provinsi || 'Jawa',
         latitude: parseFloat(lokasi.lat || 0),
         longitude: parseFloat(lokasi.lon || 0),
         adm4: lokasi.adm4 || '',
       },
-      current: forecast[0] || null,
+      current,
       forecast,
-      source: 'BMKG',
+      source: 'BMKG Resmi',
       sourceAttribution: 'Badan Meteorologi, Klimatologi, dan Geofisika (BMKG Resmi)',
       isLive: true,
       isDemo: false,
