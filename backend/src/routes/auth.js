@@ -37,12 +37,16 @@ router.post('/logout', authenticate, (req, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', authenticate, (req, res) => {
-  const user = authService.getUserById(req.user.userId);
-  if (!user) {
-    return error(res, 'USER_NOT_FOUND', 'Pengguna tidak ditemukan', 404);
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const user = await authService.getUserById(req.user.userId);
+    if (!user) {
+      return error(res, 'USER_NOT_FOUND', 'Pengguna tidak ditemukan', 404);
+    }
+    return success(res, user);
+  } catch (err) {
+    return error(res, 'SERVER_ERROR', err.message, 500);
   }
-  return success(res, user);
 });
 
 module.exports = router;

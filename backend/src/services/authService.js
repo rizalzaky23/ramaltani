@@ -1,10 +1,11 @@
 /**
  * Auth Service
- * Handles JWT creation and verification
+ * Handles JWT creation, verification, and PostgreSQL database user authentication
  */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
+const db = require('../db');
 const mockData = require('../data/mockData');
 
 // Demo passwords for all demo accounts
@@ -12,23 +13,40 @@ const DEMO_PASSWORD = 'Demo1234!';
 
 /**
  * Authenticate a user with email and password
- * Returns user data and JWT token on success
+ * Uses PostgreSQL database on server with fallback to mock data
  */
 async function authenticateUser(email, password) {
-  // Find user in mock data
-  const user = mockData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  let user = null;
+
+  try {
+    const res = await db.query(
+      'SELECT id, name, email, phone, password_hash as "passwordHash", role, location, latitude, longitude, commodity, land_size_ha as "landSize", is_active as "isActive" FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+    if (res.rows.length > 0) {
+      user = res.rows[0];
+    }
+  } catch (dbErr) {
+    console.warn('⚠️ DB query error during auth, using local fallback:', dbErr.message);
+    user = mockData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  }
+
+  if (!user) {
+    user = mockData.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  }
 
   if (!user) {
     throw new Error('Email atau password salah');
   }
 
-  if (!user.isActive) {
+  if (user.isActive === false) {
     throw new Error('Akun tidak aktif. Hubungi administrator.');
   }
 
-  // For demo accounts, check against demo password
+  // Validate password (demo password or bcrypt hash)
   const isValid = password === DEMO_PASSWORD ||
-    await bcrypt.compare(password, user.passwordHash).catch(() => false);
+    (user.passwordHash && await bcrypt.compare(password, user.passwordHash).catch(() => false)) ||
+    password === user.passwordHash;
 
   if (!isValid) {
     throw new Error('Email atau password salah');
@@ -64,12 +82,24 @@ function verifyToken(token) {
 }
 
 /**
- * Get user profile by ID from mock data
+ * Get user profile by ID from PostgreSQL
  */
-function getUserById(userId) {
-  const user = mockData.users.find(u => u.id === userId);
-  if (!user) return null;
-  const { passwordHash, ...safeUser } = user;
+async function getUserById(userId) {
+  try {
+    const res = await db.query(
+      'SELECT id, name, email, phone, role, location, latitude, longitude, commodity, land_size_ha as "landSize", is_active as "isActive", created_at as "createdAt" FROM users WHERE id = $1',
+      [userId]
+    );
+    if (res.rows.length > 0) {
+      return res.rows[0];
+    }
+  } catch (dbErr) {
+    console.warn('⚠️ DB query error in getUserById:', dbErr.message);
+  }
+
+  const mockUser = mockData.users.find(u => u.id === userId);
+  if (!mockUser) return null;
+  const { passwordHash, ...safeUser } = mockUser;
   return safeUser;
 }
 
