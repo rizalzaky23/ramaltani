@@ -11,6 +11,7 @@ import AdminLayout from './layouts/AdminLayout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import KindeCallbackPage from './pages/KindeCallbackPage';
 import DashboardHome from './pages/farmer/DashboardHome';
 import RecommendationPage from './pages/farmer/RecommendationPage';
 import RiskMapPage from './pages/farmer/RiskMapPage';
@@ -95,6 +96,7 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      <Route path="/auth/kinde-callback" element={<KindeCallbackPage />} />
 
       {/* Farmer routes */}
       <Route
