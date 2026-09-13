@@ -24,8 +24,8 @@ export default function RegisterPage() {
     try {
       const user = await register(form);
       if (user.role === 'admin') navigate('/admin');
-      else if (user.role === 'extension_officer') navigate('/extension');
-      else navigate('/app');
+      else if (user.role === 'extension_officer') navigate('/penyuluh');
+      else navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Pendaftaran gagal');
     } finally { setLoading(false); }

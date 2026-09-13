@@ -160,16 +160,47 @@ Desktop: lg:px-20 lg:py-36
 
 ---
 
+## Scroll Reveal & Animation System (Evasion-style)
+
+Untuk menyelaraskan pengalaman pengguna dengan animasi dinamis di template Evasion, RamalTani menggunakan custom IntersectionObserver hook (`useScrollReveal`) dan sistem CSS transition:
+
+### 1. Hook `useScrollReveal` (`frontend/src/hooks/useScrollReveal.js`)
+Hook ini memantau container element dan menambahkan class `in-view` ketika target elemen memasuki viewport.
+
+```jsx
+import { useScrollReveal } from '../../hooks/useScrollReveal';
+
+export default function MyPage() {
+  const containerRef = useScrollReveal();
+
+  return (
+    <div ref={containerRef} className="page-enter">
+      <div className="reveal-up">...</div>
+      <div className="reveal-up reveal-delay-2">...</div>
+    </div>
+  );
+}
+```
+
+### 2. Kelas Animasi CSS
+- `.page-enter` — Animasi halus fade-in & slide-up 16px saat halaman pertama kali dimuat
+- `.reveal-up` — Transform `translateY(40px)` ke `translateY(0)` dengan cubic-bezier timing
+- `.reveal-left` & `.reveal-right` — Horizontal slide reveal (kiri/kanan) untuk kartu fitur
+- `.reveal-scale` — Scale transform 1.02 ke 1.0 untuk image dan showcase
+- `.reveal-blur` — Filter blur 8px ke 0px untuk teks dan label
+- `.reveal-delay-1` s/d `.reveal-delay-6` — Staggering delay 0.1s - 0.6s untuk urutan card grid
+
+---
+
 ## Aturan "Tidak Boleh"
 
 - ❌ `glassmorphism` (backdrop-blur pada card/panel konten)
-- ❌ Icon Lucide dekoratif (`<Sparkles>`, `<Leaf>` sebagai ornamen)
+- ❌ Icon Lucide dekoratif berlebihan sebagai ornamen AI-slop
 - ❌ Glow/shimmer efek di luar loading skeleton
 - ❌ Font `font-mono` untuk heading atau teks panjang
 - ❌ `uppercase tracking-wider` berlebihan pada konten panjang
 - ❌ Warna latar gelap (`#0B0C0F`, `#13161C`) di luar komponen fungsional
 - ❌ `shadow-2xl shadow-black/80` (terlalu dramatis)
-- ❌ Pill badge dengan icon `<Sparkles>` sebagai label bagian
 
 ---
 
@@ -178,3 +209,4 @@ Desktop: lg:px-20 lg:py-36
 - Template: https://v0-evasion-website.vercel.app
 - Font: https://fonts.google.com/specimen/Inter
 - Data API: BMKG Open Data API + Open-Meteo Global
+

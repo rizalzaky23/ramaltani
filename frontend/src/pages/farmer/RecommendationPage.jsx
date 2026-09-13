@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { CheckCircle, AlertTriangle, ChevronDown, Loader, Info, Leaf, CloudSun, Crosshair, Sparkles } from 'lucide-react';
-import { StatusBadge, RiskBadge, ConfidenceBar, SectionHeader, LiveBMKGBadge } from '../../components/ui';
+import { ChevronDown, Loader, Info, Leaf, CloudSun, Crosshair, Sparkles } from 'lucide-react';
+import { StatusBadge, RiskBadge, ConfidenceBar } from '../../components/ui';
 import { DEMO_CROPS, DEMO_VARIETIES, DEMO_REGIONS, DEMO_RECOMMENDATION } from '../../data/mockData';
-import { recommendationsAPI, weatherAPI } from '../../services/api';
+import { recommendationsAPI } from '../../services/api';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 export default function RecommendationPage() {
   const { coords } = useOutletContext() || {};
+  const containerRef = useScrollReveal();
 
   const savedUser = (() => {
     try { return JSON.parse(localStorage.getItem('ramaltani_user') || '{}'); } catch { return {}; }
@@ -26,9 +28,9 @@ export default function RecommendationPage() {
     farmArea: savedUser.landSize ? String(savedUser.landSize) : '',
   });
   const [result, setResult] = useState(null);
-  const [meta, setMeta] = useState(null);
+  const [, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   const varieties = DEMO_VARIETIES[form.cropName] || [];
 
@@ -79,13 +81,13 @@ export default function RecommendationPage() {
   const r = result?.recommendation || result;
 
   return (
-    <div className="max-w-4xl mx-auto text-[#09090b] animate-fade-in">
+    <div ref={containerRef} className="max-w-4xl mx-auto text-[#09090b] page-enter">
       <div className="mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs uppercase tracking-widest mb-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs uppercase tracking-widest font-semibold mb-2">
           <Sparkles size={12} />
           Rule-Engine Agronomi Presisi
         </div>
-        <h1 className="font-medium text-2xl sm:text-3xl text-white font-normal">Kalkulator Kalender Tanam</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Kalkulator Kalender Tanam</h1>
         <p className="text-[#71717a] text-sm mt-1">
           Masukkan informasi lahan dan tanaman untuk simulasi jendela tanam optimal berdasarkan cuaca BMKG.
         </p>
@@ -93,18 +95,18 @@ export default function RecommendationPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Form Panel */}
-        <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl">
-          <h2 className="font-medium text-lg text-white font-normal mb-4">Parameter Lahan & Tanaman</h2>
+        <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-sm reveal-up">
+          <h2 className="font-medium text-lg text-[#09090b] mb-4">Parameter Lahan & Tanaman</h2>
 
           <form onSubmit={handleCalculate} className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="regionId" className="block text-xs uppercase tracking-widest text-[#71717a]">
+                <label htmlFor="regionId" className="block text-xs uppercase tracking-widest text-[#71717a] font-medium">
                   Lokasi (Kabupaten/Kota)
                 </label>
                 {coords?.isGPS && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                    <Crosshair size={10} className="text-emerald-400" /> Sesuai GPS
+                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <Crosshair size={10} className="text-emerald-600" /> Sesuai GPS
                   </span>
                 )}
               </div>
@@ -113,18 +115,18 @@ export default function RecommendationPage() {
                 name="regionId"
                 value={form.regionId}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-sm transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e4e4e7] text-[#09090b] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 text-sm transition-all"
               >
-                {DEMO_REGIONS.map(r => (
-                  <option key={r.id} value={r.id} className="bg-[#fafafa] text-white">
-                    {r.name}, {r.province}
+                {DEMO_REGIONS.map(reg => (
+                  <option key={reg.id} value={reg.id}>
+                    {reg.name}, {reg.province}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label htmlFor="cropName" className="block text-xs uppercase tracking-widest text-[#71717a] mb-1.5">
+              <label htmlFor="cropName" className="block text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1.5">
                 Komoditas Tanaman
               </label>
               <select
@@ -132,10 +134,10 @@ export default function RecommendationPage() {
                 name="cropName"
                 value={form.cropName}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-sm transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e4e4e7] text-[#09090b] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 text-sm transition-all"
               >
                 {DEMO_CROPS.map(c => (
-                  <option key={c.id} value={c.name} className="bg-[#fafafa] text-white">
+                  <option key={c.id} value={c.name}>
                     {c.name}
                   </option>
                 ))}
@@ -144,7 +146,7 @@ export default function RecommendationPage() {
 
             {varieties.length > 0 && (
               <div>
-                <label htmlFor="varietyName" className="block text-xs uppercase tracking-widest text-[#71717a] mb-1.5">
+                <label htmlFor="varietyName" className="block text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1.5">
                   Varietas Benih (Opsional)
                 </label>
                 <select
@@ -152,11 +154,11 @@ export default function RecommendationPage() {
                   name="varietyName"
                   value={form.varietyName}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-sm transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e4e4e7] text-[#09090b] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 text-sm transition-all"
                 >
-                  <option value="" className="bg-[#fafafa] text-white">-- Pilih Varietas --</option>
+                  <option value="">-- Pilih Varietas --</option>
                   {varieties.map(v => (
-                    <option key={v.id} value={v.name} className="bg-[#fafafa] text-white">
+                    <option key={v.id} value={v.name}>
                       {v.name}
                     </option>
                   ))}
@@ -165,7 +167,7 @@ export default function RecommendationPage() {
             )}
 
             <div>
-              <label htmlFor="soilCondition" className="block text-xs uppercase tracking-widest text-[#71717a] mb-1.5">
+              <label htmlFor="soilCondition" className="block text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1.5">
                 Kondisi Lahan & Tanah
               </label>
               <select
@@ -173,17 +175,17 @@ export default function RecommendationPage() {
                 name="soilCondition"
                 value={form.soilCondition}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-sm transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#e4e4e7] text-[#09090b] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 text-sm transition-all"
               >
-                <option value="normal" className="bg-[#fafafa] text-white">Normal / Irigasi Teknis</option>
-                <option value="loam" className="bg-[#fafafa] text-white">Lempung (Loam)</option>
-                <option value="clay" className="bg-[#fafafa] text-white">Liat (Clay)</option>
-                <option value="sandy" className="bg-[#fafafa] text-white">Berpasir (Sandy)</option>
+                <option value="normal">Normal / Irigasi Teknis</option>
+                <option value="loam">Lempung (Loam)</option>
+                <option value="clay">Liat (Clay)</option>
+                <option value="sandy">Berpasir (Sandy)</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="farmArea" className="block text-xs uppercase tracking-widest text-[#71717a] mb-1.5">
+              <label htmlFor="farmArea" className="block text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1.5">
                 Luas Lahan (Hektar, opsional)
               </label>
               <input
@@ -194,7 +196,7 @@ export default function RecommendationPage() {
                 min="0.1"
                 value={form.farmArea}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white placeholder-[#717684] focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 text-sm transition-all"
+                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#e4e4e7] text-[#09090b] placeholder-[#a1a1aa] focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 text-sm transition-all"
                 placeholder="contoh: 1.2"
               />
             </div>
@@ -202,7 +204,7 @@ export default function RecommendationPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-3 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.99] disabled:opacity-50"
+              className="w-full mt-3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -220,7 +222,7 @@ export default function RecommendationPage() {
 
           <div className="mt-5 p-3.5 bg-[#fafafa] rounded-xl border border-[#e4e4e7]">
             <div className="flex items-start gap-2.5">
-              <Info size={14} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+              <Info size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-[#71717a] leading-relaxed">
                 Sistem menerapkan <em>climate-aware rule engine</em> berbasis prakiraan BMKG. Rekomendasi ini dirancang sebagai panduan agronomi pelengkap intuisi petani.
               </p>
@@ -230,39 +232,39 @@ export default function RecommendationPage() {
 
         {/* Results Panel */}
         {r && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="rounded-2xl bg-gradient-to-br from-[#13161C] to-[#161B24] border border-[#e4e4e7] p-5 sm:p-6 shadow-2xl relative overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: r.riskColor }}>
+          <div className="space-y-4 reveal-up">
+            <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-sm relative overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: r.riskColor }}>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <span className="text-xs uppercase tracking-widest text-[#71717a]">Hasil Analisis</span>
-                  <h2 className="font-medium text-2xl text-white font-normal mt-0.5">{result?.crop || form.cropName}</h2>
+                  <span className="text-xs uppercase tracking-widest text-[#71717a] font-medium">Hasil Analisis</span>
+                  <h2 className="text-2xl font-semibold text-[#09090b] mt-0.5">{result?.crop || form.cropName}</h2>
                   {result?.variety && <div className="text-xs text-[#71717a] mt-0.5">Varietas: {result.variety}</div>}
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <StatusBadge status={r.status} />
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                     BMKG Live
                   </span>
                 </div>
               </div>
 
               {r.window && (
-                <div className="p-4 bg-[#fafafa] rounded-xl border border-emerald-500/20 mb-4">
-                  <div className="text-xs font-mono font-semibold text-emerald-400 mb-1 uppercase tracking-wider">
+                <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 mb-4">
+                  <div className="text-xs font-mono font-semibold text-emerald-800 mb-1 uppercase tracking-wider">
                     Jadwal Tanam Disarankan
                   </div>
-                  <div className="font-medium text-xl text-white">{r.window.start}</div>
-                  <div className="font-medium text-base text-[#71717a]">sampai {r.window.end}</div>
+                  <div className="text-xl font-medium text-[#09090b]">{r.window.start}</div>
+                  <div className="text-sm text-[#71717a]">sampai {r.window.end}</div>
                 </div>
               )}
 
               <ConfidenceBar value={r.confidence} className="mb-4" />
 
               <div className="mb-4">
-                <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1.5">Skor Risiko Iklim</div>
+                <div className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1.5">Skor Risiko Iklim</div>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-2 bg-[#fafafa] rounded-full overflow-hidden border border-[#e4e4e7]">
+                  <div className="flex-1 h-2 bg-[#f4f4f5] rounded-full overflow-hidden border border-[#e4e4e7]">
                     <div className="h-full rounded-full transition-all duration-500" style={{ width: `${r.riskScore}%`, backgroundColor: r.riskColor }} />
                   </div>
                   <RiskBadge label={r.risk} badge={r.riskBadge} />
@@ -271,29 +273,29 @@ export default function RecommendationPage() {
 
               <div className="space-y-3">
                 <div className="p-3 bg-[#fafafa] rounded-xl border border-[#e4e4e7]">
-                  <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1">Alasan Rekomendasi</div>
+                  <div className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1">Alasan Rekomendasi</div>
                   <p className="text-xs sm:text-sm text-[#09090b] leading-relaxed">{r.reason}</p>
                 </div>
 
-                <div className="p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                  <div className="text-xs uppercase tracking-widest text-emerald-400 mb-1">Yang Perlu Dilakukan</div>
-                  <p className="text-xs sm:text-sm font-medium text-emerald-200">{r.action}</p>
+                <div className="p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                  <div className="text-xs uppercase tracking-widest text-emerald-800 font-medium mb-1">Yang Perlu Dilakukan</div>
+                  <p className="text-xs sm:text-sm font-medium text-emerald-950">{r.action}</p>
                 </div>
 
                 {r.alternative && (
                   <div className="flex items-center gap-2 text-xs text-[#71717a]">
-                    <AlertTriangle size={13} className="text-amber-400" />
-                    <span>Alternatif: <strong className="text-white">{r.alternative}</strong></span>
+                    <span className="text-amber-600 font-medium">Alternatif:</span>
+                    <strong className="text-[#09090b] font-medium">{r.alternative}</strong>
                   </div>
                 )}
 
                 {/* Source footer */}
                 <div className="mt-4 pt-3 border-t border-[#e4e4e7] flex items-center justify-between text-xs text-[#71717a]">
                   <div className="flex items-center gap-1.5">
-                    <CloudSun size={14} className="text-emerald-400" />
-                    <span>Sumber: <strong className="text-white">BMKG Resmi (Live API)</strong></span>
+                    <CloudSun size={14} className="text-emerald-600" />
+                    <span>Sumber: <strong className="text-[#09090b]">BMKG Resmi (Live API)</strong></span>
                   </div>
-                  <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium">
                     Real-Time
                   </span>
                 </div>
@@ -302,8 +304,8 @@ export default function RecommendationPage() {
 
             {/* Detail Factors */}
             {r.details && (
-              <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-xl">
-                <h3 className="font-medium text-base text-white font-normal mb-3">Faktor Cuaca yang Dianalisis</h3>
+              <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-sm">
+                <h3 className="font-medium text-base text-[#09090b] mb-3">Faktor Cuaca yang Dianalisis</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Rata-rata peluang hujan', value: `${r.details.avgRainProbability}%` },
@@ -315,7 +317,7 @@ export default function RecommendationPage() {
                   ].map((f, i) => (
                     <div key={i} className="flex justify-between items-center py-2 px-3 rounded-lg bg-[#fafafa] border border-[#e4e4e7]">
                       <span className="text-[11px] text-[#71717a]">{f.label}</span>
-                      <span className="text-xs font-mono font-bold text-white">{f.value}</span>
+                      <span className="text-xs font-mono font-medium text-[#09090b]">{f.value}</span>
                     </div>
                   ))}
                 </div>
@@ -326,33 +328,33 @@ export default function RecommendationPage() {
       </div>
 
       {/* Variety Recommendations */}
-      <div className="mt-10">
+      <div className="mt-10 reveal-up">
         <div className="mb-4">
-          <h2 className="font-medium text-xl text-white font-normal">Rekomendasi Varietas Unggul</h2>
+          <h2 className="text-xl font-semibold text-[#09090b] tracking-tight">Rekomendasi Varietas Unggul</h2>
           <p className="text-xs text-[#71717a]">Varietas {form.cropName} dengan ketahanan spesifik terhadap dinamika iklim wilayah</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {(DEMO_VARIETIES[form.cropName] || []).map((v, i) => (
-            <div key={i} className="rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-lg hover:border-emerald-500/30 transition-all">
+            <div key={i} className="rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-sm hover:border-emerald-300 transition-all">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-medium text-white text-base">{v.name}</h3>
+                  <h3 className="font-medium text-[#09090b] text-base">{v.name}</h3>
                   <div className="text-xs font-mono text-[#71717a] mt-0.5">Umur panen: {v.harvestAgeDays} hari</div>
                 </div>
                 {v.droughtTolerant && (
-                  <span className="text-[11px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-mono bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
                     Tahan Kering
                   </span>
                 )}
                 {v.floodTolerant && (
-                  <span className="text-[11px] font-mono bg-sky-500/10 text-sky-300 border border-sky-500/20 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-mono bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-medium">
                     Tahan Genangan
                   </span>
                 )}
               </div>
               <div className="flex justify-between text-xs pt-3 border-t border-[#e4e4e7]">
                 <span className="text-[#71717a]">Rata-rata hasil</span>
-                <span className="font-mono font-bold text-emerald-400">{v.yieldAverage} ton/ha</span>
+                <span className="font-mono font-semibold text-emerald-700">{v.yieldAverage} ton/ha</span>
               </div>
             </div>
           ))}
