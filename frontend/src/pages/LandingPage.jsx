@@ -161,45 +161,55 @@ function FeaturedSection() {
 
       {/* 2-column image cards — slide in dari kiri dan kanan */}
       <div className="grid grid-cols-1 gap-4 px-6 pb-16 md:grid-cols-2 md:px-12 lg:px-20">
-        <div className="reveal-left">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5] group">
+        <Link to="/dashboard/rekomendasi" className="reveal-left block group">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
             <img
               alt="Petani memeriksa tanaman padi di sawah"
               src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1000"
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20">
+            <div className="absolute bottom-6 left-6 flex items-center gap-2">
+              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20 group-hover:bg-white/30 transition-colors">
                 Rekomendasi Tanam
+              </span>
+              <span className="backdrop-blur-md px-3 py-1.5 text-xs rounded-full bg-emerald-600/80 text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka Fitur →
               </span>
             </div>
           </div>
           <div className="pt-5">
             <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2">Fitur 01</p>
-            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight">Jendela waktu terbaik berdasarkan probabilitas hujan BMKG 7–14 hari ke depan.</h3>
+            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight group-hover:text-emerald-700 transition-colors">
+              Jendela waktu terbaik berdasarkan probabilitas hujan BMKG 7–14 hari ke depan.
+            </h3>
           </div>
-        </div>
+        </Link>
 
-        <div className="reveal-right reveal-delay-2">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5] group">
+        <Link to="/dashboard/peta-risiko" className="reveal-right reveal-delay-2 block group">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
             <img
               alt="Peta lahan pertanian dari udara"
               src="https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?q=80&w=1000"
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20">
+            <div className="absolute bottom-6 left-6 flex items-center gap-2">
+              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20 group-hover:bg-white/30 transition-colors">
                 Peta Risiko GIS
+              </span>
+              <span className="backdrop-blur-md px-3 py-1.5 text-xs rounded-full bg-emerald-600/80 text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Buka Radar Peta →
               </span>
             </div>
           </div>
           <div className="pt-5">
             <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2">Fitur 02</p>
-            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight">Visualisasi zona bahaya per kecamatan dengan kode warna risiko nyata.</h3>
+            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight group-hover:text-emerald-700 transition-colors">
+              Visualisasi zona bahaya per kecamatan dengan kode warna risiko nyata.
+            </h3>
           </div>
-        </div>
+        </Link>
       </div>
     </section>
   );
@@ -521,8 +531,17 @@ function Footer() {
           <div>
             <h4 className="mb-4 text-sm font-medium text-[#09090b]">Platform</h4>
             <ul className="space-y-3">
-              {['Rekomendasi Tanam', 'Peta Risiko', 'Peringatan Dini', 'Komunitas'].map(item => (
-                <li key={item}><a href="#fitur" className="text-sm text-[#71717a] hover:text-[#09090b] transition-colors">{item}</a></li>
+              {[
+                { label: 'Rekomendasi Tanam', to: '/dashboard/rekomendasi' },
+                { label: 'Peta Risiko', to: '/dashboard/peta-risiko' },
+                { label: 'Peringatan Dini', to: '/dashboard/peringatan' },
+                { label: 'Komunitas', to: '/dashboard/komunitas' },
+              ].map(item => (
+                <li key={item.label}>
+                  <Link to={item.to} className="text-sm text-[#71717a] hover:text-[#09090b] transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
               ))}
             </ul>
           </div>

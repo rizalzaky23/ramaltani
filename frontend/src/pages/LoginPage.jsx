@@ -32,10 +32,28 @@ export default function LoginPage() {
       else navigate('/dashboard');
     } catch (err) {
       setError(err?.response?.data?.error?.message || err?.message || 'Login gagal. Periksa email dan password.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fillDemo = (account) => { setEmail(account.email); setPassword('Demo1234!'); setError(''); };
+  const fillDemo = async (account) => {
+    setEmail(account.email);
+    setPassword('Demo1234!');
+    setError('');
+    setLoading(true);
+    try {
+      const user = await login(account.email, 'Demo1234!');
+      if (user.role === 'farmer') navigate('/dashboard');
+      else if (user.role === 'extension_officer') navigate('/penyuluh');
+      else if (user.role === 'admin') navigate('/admin');
+      else navigate('/dashboard');
+    } catch (err) {
+      setError(err?.response?.data?.error?.message || err?.message || 'Login gagal. Periksa email dan password.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex">

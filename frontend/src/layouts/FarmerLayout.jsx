@@ -63,15 +63,15 @@ export default function FarmerLayout() {
             <span className="hidden sm:inline text-xs text-[#71717a] font-normal border-l border-[#e4e4e7] pl-2 ml-0.5">Petani</span>
           </Link>
 
-          {/* Center Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Menu navigasi utama">
+          {/* Center Navigation Links (Desktop/Tablet) */}
+          <nav className="hidden md:flex items-center gap-1" aria-label="Menu navigasi utama">
             {navItems.map(item => {
               const active = isActive(item.to, item.exact);
               return (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     active
                       ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-xs'
                       : 'text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5]'
@@ -118,17 +118,17 @@ export default function FarmerLayout() {
               aria-label="Profil petani"
             >
               <span className="hidden sm:inline truncate max-w-[80px]">
-                {user?.name?.split(' ')[0] || 'Petani'}
+                {user?.name || 'Petani'}
               </span>
-              <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px] font-medium">
-                {user?.name?.charAt(0) || 'P'}
+              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-semibold flex items-center justify-center text-[10px]">
+                {(user?.name || 'P')[0]}
               </div>
             </Link>
 
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 text-[#71717a] hover:text-[#09090b] rounded-full hover:bg-[#f4f4f5] transition-colors"
+              className="md:hidden p-1.5 text-[#71717a] hover:text-[#09090b] rounded-full hover:bg-[#f4f4f5] transition-colors"
               aria-label={mobileMenuOpen ? "Tutup navigasi" : "Buka navigasi"}
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -138,7 +138,7 @@ export default function FarmerLayout() {
 
         {/* Mobile Dropdown Menu (Evasion-style overlay) */}
         {mobileMenuOpen && (
-          <div className="lg:hidden mt-2 bg-white/95 backdrop-blur-md border border-[#e4e4e7] rounded-3xl p-4 shadow-xl animate-slide-up">
+          <div className="md:hidden mt-2 bg-white/95 backdrop-blur-md border border-[#e4e4e7] rounded-3xl p-4 shadow-xl animate-slide-up">
             <div className="space-y-1 pb-3 border-b border-[#e4e4e7]">
               {navItems.map(item => {
                 const active = isActive(item.to, item.exact);
@@ -180,6 +180,42 @@ export default function FarmerLayout() {
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24" id="main-content">
         <Outlet context={{ coords, nearestRegion, requestGPS, openGPSModal: () => setShowGPSModal(true) }} />
       </main>
+
+      {/* Mobile Bottom Navigation Bar (Quick Access for Farmers) */}
+      <nav aria-label="Navigasi cepat mobile" className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-sm bg-white/90 backdrop-blur-md border border-[#e4e4e7] rounded-full py-2 px-3 shadow-lg flex items-center justify-around">
+        <Link
+          to="/dashboard"
+          className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            location.pathname === '/dashboard' ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'text-[#71717a]'
+          }`}
+        >
+          Beranda
+        </Link>
+        <Link
+          to="/dashboard/rekomendasi"
+          className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            location.pathname.includes('/rekomendasi') ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'text-[#71717a]'
+          }`}
+        >
+          Rekomendasi
+        </Link>
+        <Link
+          to="/dashboard/peta-risiko"
+          className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            location.pathname.includes('/peta') ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'text-[#71717a]'
+          }`}
+        >
+          Peta Risiko
+        </Link>
+        <Link
+          to="/dashboard/riwayat"
+          className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            location.pathname.includes('/riwayat') ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'text-[#71717a]'
+          }`}
+        >
+          Riwayat
+        </Link>
+      </nav>
 
       {/* Clean Minimalist Evasion Footer */}
       <footer className="border-t border-[#e4e4e7] bg-white py-10 text-xs text-[#71717a] mt-auto">

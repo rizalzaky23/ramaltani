@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Crosshair, Sparkles } from 'lucide-react';
+import { MapPin, Crosshair } from 'lucide-react';
 import { RiskBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
 import { recommendationsAPI } from '../../services/api';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 export default function RiskMapPage() {
   const { coords } = useOutletContext() || {};
@@ -19,7 +20,7 @@ export default function RiskMapPage() {
     const fetchLiveRisk = async () => {
       try {
         const response = await recommendationsAPI.getRiskMap();
-        if (response.data && response.data.data && response.data.data.length > 0) {
+        if (response.data && response.data.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
           setRiskData(response.data.data);
         }
       } catch (err) {
@@ -39,124 +40,141 @@ export default function RiskMapPage() {
     }
   }, [coords?.regionId, riskData]);
 
-  const mapCenter = (coords?.latitude && coords?.longitude)
+  const mapCenter = (coords?.latitude && coords?.longitude && typeof coords.latitude === 'number' && typeof coords.longitude === 'number')
     ? [coords.latitude, coords.longitude]
     : [-7.6, 110.5];
 
   return (
-    <div ref={containerRef} className="text-[#09090b] page-enter">
-      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
-            Radar Geospasial Iklim BMKG
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
-            Peta Risiko Wilayah
-          </h1>
-          <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-2xl leading-relaxed">
-            Visualisasi risiko hidrometeorologi real-time per wilayah berbasis telemetry satelit dan stasiun cuaca BMKG.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {coords?.isGPS && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
-              <Crosshair size={12} className="text-emerald-600 animate-pulse" />
-              GPS: {coords.regionName} ({coords.distanceKm} km)
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            BMKG Live
-          </span>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Map Container */}
-        <div className="lg:col-span-2 reveal-up">
-          <div className="rounded-2xl border border-[#e4e4e7] overflow-hidden shadow-sm relative" style={{ height: '490px' }}>
-            <MapContainer
-              center={mapCenter}
-              zoom={9}
-              style={{ height: '100%', width: '100%' }}
-              aria-label="Peta risiko wilayah"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-
-              {/* GPS User Marker */}
-              {coords?.latitude && coords?.longitude && (
-                <CircleMarker
-                  center={[coords.latitude, coords.longitude]}
-                  radius={10}
-                  pathOptions={{
-                    color: '#059669',
-                    fillColor: '#10B981',
-                    fillOpacity: 0.9,
-                    weight: 3,
-                  }}
-                >
-                  <Popup>
-                    <div className="font-sans text-[#09090b] text-xs p-1" style={{ minWidth: 160 }}>
-                      <div className="font-semibold text-emerald-700 mb-0.5">Posisi GPS Anda</div>
-                      <div className="text-[#71717a] font-mono text-[11px]">
-                        {coords.latitude.toFixed(4)}°, {coords.longitude.toFixed(4)}°
-                      </div>
-                      <div className="text-[#71717a] mt-1">Wilayah: {coords.regionName}</div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              )}
-
-              {/* Region Risk Markers */}
-              {riskData.map((region) => (
-                <CircleMarker
-                  key={region.regionId}
-                  center={[region.coordinates.lat, region.coordinates.lng]}
-                  radius={Math.max(14, Math.min(26, region.score / 3))}
-                  pathOptions={{
-                    color: region.color,
-                    fillColor: region.color,
-                    fillOpacity: 0.6,
-                    weight: 2,
-                  }}
-                  eventHandlers={{
-                    click: () => setSelectedRegion(region),
-                  }}
-                >
-                  <Popup>
-                    <div className="font-sans text-[#09090b] text-xs p-1" style={{ minWidth: 180 }}>
-                      <div className="font-semibold text-sm mb-1">{region.regionName}</div>
-                      <div className="space-y-1 text-[11px]">
-                        <div className="flex justify-between">
-                          <span className="text-[#71717a]">Skor Risiko</span>
-                          <span className="font-mono font-semibold" style={{ color: region.color }}>{region.score}/100</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[#71717a]">Status</span>
-                          <span className="font-semibold">{region.label}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[#71717a]">Peluang Hujan</span>
-                          <span className="font-semibold">{region.rainProbability}%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[#71717a]">Petani Terdampak</span>
-                          <span className="font-semibold">{region.affectedFarmers.toLocaleString('id-ID')}</span>
-                        </div>
-                        <div className="mt-2 pt-2 border-t border-[#e4e4e7] text-[#71717a]">
-                          {region.mainRisk}
-                        </div>
-                      </div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              ))}
-            </MapContainer>
+    <ErrorBoundary>
+      <div ref={containerRef} className="text-[#09090b] page-enter">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
+              Radar Geospasial Iklim BMKG
+            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+              Peta Risiko Wilayah
+            </h1>
+            <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-2xl leading-relaxed">
+              Visualisasi risiko hidrometeorologi real-time per wilayah berbasis telemetry satelit dan stasiun cuaca BMKG.
+            </p>
           </div>
+
+          <div className="flex items-center gap-2.5">
+            {coords?.isGPS && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
+                <Crosshair size={12} className="text-emerald-600 animate-pulse" />
+                GPS: {coords.regionName} ({coords.distanceKm} km)
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              BMKG Live
+            </span>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Map Container */}
+          <div className="lg:col-span-2 reveal-up">
+            <div className="rounded-2xl border border-[#e4e4e7] overflow-hidden shadow-sm relative" style={{ height: '490px' }}>
+              <MapContainer
+                center={mapCenter}
+                zoom={9}
+                style={{ height: '100%', width: '100%' }}
+                aria-label="Peta risiko wilayah"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                {/* GPS User Marker */}
+                {coords?.latitude && coords?.longitude && typeof coords.latitude === 'number' && typeof coords.longitude === 'number' && (
+                  <CircleMarker
+                    center={[coords.latitude, coords.longitude]}
+                    radius={10}
+                    pathOptions={{
+                      color: '#059669',
+                      fillColor: '#10B981',
+                      fillOpacity: 0.9,
+                      weight: 3,
+                    }}
+                  >
+                    <Popup>
+                      <div className="font-sans text-[#09090b] text-xs p-1" style={{ minWidth: 160 }}>
+                        <div className="font-semibold text-emerald-700 mb-0.5">Posisi GPS Anda</div>
+                        <div className="text-[#71717a] font-mono text-[11px]">
+                          {coords.latitude.toFixed(4)}°, {coords.longitude.toFixed(4)}°
+                        </div>
+                        <div className="text-[#71717a] mt-1">Wilayah: {coords.regionName}</div>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                )}
+
+                {/* Region Risk Markers */}
+                {riskData.map((region) => {
+                  const lat = typeof region.latitude === 'number'
+                    ? region.latitude
+                    : (typeof region.coordinates?.lat === 'number' ? region.coordinates.lat : parseFloat(region.lat));
+                  const lng = typeof region.longitude === 'number'
+                    ? region.longitude
+                    : (typeof region.coordinates?.lng === 'number' ? region.coordinates.lng : parseFloat(region.lng));
+
+                  if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+                    return null;
+                  }
+
+                  const color = region.color || '#10B981';
+                  const score = typeof region.score === 'number' ? region.score : 30;
+
+                  return (
+                    <CircleMarker
+                      key={region.regionId || `${lat}-${lng}`}
+                      center={[lat, lng]}
+                      radius={Math.max(14, Math.min(26, score / 3))}
+                      pathOptions={{
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.6,
+                        weight: 2,
+                      }}
+                      eventHandlers={{
+                        click: () => setSelectedRegion(region),
+                      }}
+                    >
+                      <Popup>
+                        <div className="font-sans text-[#09090b] text-xs p-1" style={{ minWidth: 180 }}>
+                          <div className="font-semibold text-sm mb-1">{region.regionName}</div>
+                          <div className="space-y-1 text-[11px]">
+                            <div className="flex justify-between">
+                              <span className="text-[#71717a]">Skor Risiko</span>
+                              <span className="font-mono font-semibold" style={{ color: color }}>{score}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#71717a]">Status</span>
+                              <span className="font-semibold">{region.label || 'Dipantau'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#71717a]">Peluang Hujan</span>
+                              <span className="font-semibold">{region.rainProbability ?? 40}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#71717a]">Petani Terdampak</span>
+                              <span className="font-semibold">{(region.affectedFarmers || 0).toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-[#e4e4e7] text-[#71717a]">
+                              {region.mainRisk || 'Pemantauan iklim BMKG normal.'}
+                            </div>
+                          </div>
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })}
+              </MapContainer>
+            </div>
 
           {/* Legend */}
           <div className="mt-3 flex flex-wrap gap-4 items-center px-1">
@@ -272,6 +290,8 @@ export default function RiskMapPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
+

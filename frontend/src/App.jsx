@@ -24,6 +24,8 @@ import ProfilePage from './pages/farmer/ProfilePage';
 import ExtensionDashboard from './pages/extension/ExtensionDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Loading fallback
 function LoadingScreen() {
   return (
@@ -99,18 +101,34 @@ function AppRoutes() {
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
       <Route path="/auth/kinde-callback" element={<KindeCallbackPage />} />
 
+      {/* Top-level direct shortcuts */}
+      <Route path="/rekomendasi" element={<Navigate to="/dashboard/rekomendasi" replace />} />
+      <Route path="/rekomendasi-tanam" element={<Navigate to="/dashboard/rekomendasi" replace />} />
+      <Route path="/peta-risiko" element={<Navigate to="/dashboard/peta-risiko" replace />} />
+      <Route path="/peta-resiko" element={<Navigate to="/dashboard/peta-risiko" replace />} />
+      <Route path="/peta" element={<Navigate to="/dashboard/peta-risiko" replace />} />
+      <Route path="/riwayat" element={<Navigate to="/dashboard/riwayat" replace />} />
+      <Route path="/peringatan" element={<Navigate to="/dashboard/peringatan" replace />} />
+      <Route path="/komunitas" element={<Navigate to="/dashboard/komunitas" replace />} />
+      <Route path="/edukasi" element={<Navigate to="/dashboard/edukasi" replace />} />
+
       {/* Farmer routes */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute allowedRoles={['farmer']}>
-            <FarmerLayout />
+            <ErrorBoundary>
+              <FarmerLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
         <Route index element={<DashboardHome />} />
         <Route path="rekomendasi" element={<RecommendationPage />} />
+        <Route path="rekomendasi-tanam" element={<Navigate to="/dashboard/rekomendasi" replace />} />
         <Route path="peta-risiko" element={<RiskMapPage />} />
+        <Route path="peta-resiko" element={<Navigate to="/dashboard/peta-risiko" replace />} />
+        <Route path="peta" element={<Navigate to="/dashboard/peta-risiko" replace />} />
         <Route path="riwayat" element={<PlantingHistoryPage />} />
         <Route path="peringatan" element={<NotificationsPage />} />
         <Route path="komunitas" element={<CommunityPage />} />
@@ -124,7 +142,9 @@ function AppRoutes() {
         path="/penyuluh"
         element={
           <ProtectedRoute allowedRoles={['extension_officer']}>
-            <ExtensionLayout />
+            <ErrorBoundary>
+              <ExtensionLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
@@ -140,7 +160,9 @@ function AppRoutes() {
         path="/admin"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout />
+            <ErrorBoundary>
+              <AdminLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
