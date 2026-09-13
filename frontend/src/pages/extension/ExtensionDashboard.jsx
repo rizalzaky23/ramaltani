@@ -68,14 +68,15 @@ export default function ExtensionDashboard() {
 
   return (
     <div ref={containerRef} className="max-w-6xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
-            <Sparkles size={12} />
+          <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
             Command Center Penyuluh (PPL)
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Dashboard Penyuluh Pertanian</h1>
-          <p className="text-[#71717a] text-sm mt-1">
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+            Dashboard Penyuluh Pertanian
+          </h1>
+          <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-xl leading-relaxed">
             Monitoring dinamika iklim, kesiapan tanam kelompok tani, dan mitigasi risiko wilayah binaan.
           </p>
         </div>

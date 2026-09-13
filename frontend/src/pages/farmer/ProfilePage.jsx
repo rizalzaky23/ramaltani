@@ -17,16 +17,16 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs uppercase tracking-widest font-semibold mb-2">
-            <Sparkles size={12} />
-            Identitas Pengguna
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Profil Petani</h1>
-          <p className="text-[#71717a] text-sm mt-1">Informasi identitas akun dan parameter hamparan lahan Anda.</p>
-        </div>
-        <DemoBadge />
+      <div className="mb-10">
+        <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
+          Identitas & Lahan
+        </p>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+          Profil Petani
+        </h1>
+        <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-xl leading-relaxed">
+          Informasi identitas akun, lokasi basis kelompok tani, dan parameter luas hamparan lahan Anda.
+        </p>
       </div>
 
       <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-7 mb-6 shadow-sm">

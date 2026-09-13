@@ -98,16 +98,17 @@ export default function CommunityPage() {
   };
 
   return (
-    <div ref={containerRef} className="max-w-3xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div ref={containerRef} className="max-w-4xl mx-auto text-[#09090b] page-enter">
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs uppercase tracking-widest font-semibold mb-2">
-            <Sparkles size={12} />
+          <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
             Forum Komunitas Tani
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Komunitas Petani</h1>
-          <p className="text-[#71717a] text-sm mt-1">
-            Ruang berbagi laporan cuaca lapangan, strategi olah tanah, dan mitigasi hama lokal.
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+            Komunitas Petani
+          </h1>
+          <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-xl leading-relaxed">
+            Ruang bertukar laporan cuaca lapangan, strategi olah tanah, dan mitigasi hama lokal antar sesama petani.
           </p>
         </div>
         <button

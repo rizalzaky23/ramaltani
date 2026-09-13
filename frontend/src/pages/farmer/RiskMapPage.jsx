@@ -44,16 +44,17 @@ export default function RiskMapPage() {
     : [-7.6, 110.5];
 
   return (
-    <div ref={containerRef} className="max-w-6xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div ref={containerRef} className="text-[#09090b] page-enter">
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs uppercase tracking-widest font-semibold mb-2">
-            <Sparkles size={12} />
-            Radar Geospasial Iklim
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Peta Risiko Wilayah</h1>
-          <p className="text-[#71717a] text-sm mt-1">
-            Visualisasi risiko hidrometeorologi real-time per wilayah berbasis telemetry satelit dan BMKG.
+          <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
+            Radar Geospasial Iklim BMKG
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+            Peta Risiko Wilayah
+          </h1>
+          <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-2xl leading-relaxed">
+            Visualisasi risiko hidrometeorologi real-time per wilayah berbasis telemetry satelit dan stasiun cuaca BMKG.
           </p>
         </div>
 

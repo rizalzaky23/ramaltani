@@ -81,15 +81,16 @@ export default function RecommendationPage() {
   const r = result?.recommendation || result;
 
   return (
-    <div ref={containerRef} className="max-w-4xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs uppercase tracking-widest font-semibold mb-2">
-          <Sparkles size={12} />
+    <div ref={containerRef} className="text-[#09090b] page-enter">
+      <div className="mb-10">
+        <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
           Rule-Engine Agronomi Presisi
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Kalkulator Kalender Tanam</h1>
-        <p className="text-[#71717a] text-sm mt-1">
-          Masukkan informasi lahan dan tanaman untuk simulasi jendela tanam optimal berdasarkan cuaca BMKG.
+        </p>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+          Kalkulator Kalender Tanam
+        </h1>
+        <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-2xl leading-relaxed">
+          Masukkan parameter lahan dan varietas benih untuk memproyeksikan jadwal tanam optimal dan mitigasi risiko cuaca BMKG.
         </p>
       </div>
 

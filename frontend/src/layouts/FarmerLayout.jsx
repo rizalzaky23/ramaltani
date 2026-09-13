@@ -1,106 +1,27 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  Home, MapPin, Calendar, Bell, Users, BookOpen, Settings,
-  User, ChevronRight, LogOut, X, Menu, BarChart2, Crosshair
+  Bell, Crosshair, Menu, X, LogOut, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useGPSLocation } from '../hooks/useGPSLocation';
 import GPSLocationModal from '../components/GPSLocationModal';
 
 const navItems = [
-  { to: '/dashboard', icon: <Home size={18} />, label: 'Beranda', exact: true },
-  { to: '/dashboard/rekomendasi', icon: <Calendar size={18} />, label: 'Rekomendasi' },
-  { to: '/dashboard/peta-risiko', icon: <MapPin size={18} />, label: 'Peta Risiko' },
-  { to: '/dashboard/riwayat', icon: <BarChart2 size={18} />, label: 'Riwayat Tanam' },
-  { to: '/dashboard/peringatan', icon: <Bell size={18} />, label: 'Peringatan' },
-  { to: '/dashboard/komunitas', icon: <Users size={18} />, label: 'Komunitas' },
-  { to: '/dashboard/edukasi', icon: <BookOpen size={18} />, label: 'Pusat Edukasi' },
-  { to: '/dashboard/pengaturan', icon: <Settings size={18} />, label: 'Pengaturan' },
+  { to: '/dashboard', label: 'Beranda', exact: true },
+  { to: '/dashboard/rekomendasi', label: 'Rekomendasi Tanam' },
+  { to: '/dashboard/peta-risiko', label: 'Peta Risiko' },
+  { to: '/dashboard/riwayat', label: 'Riwayat Tanam' },
+  { to: '/dashboard/peringatan', label: 'Peringatan' },
+  { to: '/dashboard/komunitas', label: 'Komunitas' },
+  { to: '/dashboard/edukasi', label: 'Edukasi' },
 ];
 
-function SidebarNav({ onClose }) {
+export default function FarmerLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const isActive = (to, exact) => {
-    if (exact) return location.pathname === to;
-    return location.pathname.startsWith(to) && to !== '/dashboard';
-  };
-
-  const handleLogout = () => { logout(); navigate('/login'); };
-
-  return (
-    <div className="flex flex-col h-full bg-white border-r border-[#e4e4e7]">
-      {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4e4e7]">
-        <Link to="/" className="flex items-center gap-2.5 group" aria-label="RamalTani Beranda">
-          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center group-hover:bg-emerald-700 transition-colors">
-            <span className="text-white text-xs font-bold">RT</span>
-          </div>
-          <span className="text-base font-semibold tracking-tight text-[#09090b]">RamalTani</span>
-        </Link>
-        {onClose && (
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5] transition-colors" aria-label="Tutup menu">
-            <X size={18} />
-          </button>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-3 overflow-y-auto" aria-label="Menu navigasi petani">
-        <div className="space-y-0.5">
-          {navItems.map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                isActive(item.to, item.exact)
-                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                  : 'text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5]'
-              }`}
-              aria-current={isActive(item.to, item.exact) ? 'page' : undefined}
-            >
-              <span className={isActive(item.to, item.exact) ? 'text-emerald-600' : 'text-[#a1a1aa]'}>
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
-
-      {/* User profile & logout */}
-      <div className="p-3 border-t border-[#e4e4e7]">
-        <Link to="/dashboard/profil" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f4f4f5] transition-colors mb-1">
-          <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-            {user?.name?.charAt(0) || 'P'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-[#09090b] truncate">{user?.name || 'Petani'}</div>
-            <div className="text-xs text-[#71717a] truncate">{user?.location || user?.email}</div>
-          </div>
-          <ChevronRight size={14} className="text-[#d4d4d8] flex-shrink-0" />
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[#71717a] hover:text-rose-600 hover:bg-rose-50 transition-colors text-sm"
-          aria-label="Keluar dari akun"
-        >
-          <LogOut size={15} />
-          Keluar
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function FarmerLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
-  const { user } = useAuth();
 
   const {
     coords, nearestRegion, loading: gpsLoading, error: gpsError,
@@ -109,13 +30,18 @@ export default function FarmerLayout() {
 
   const [showGPSModal, setShowGPSModal] = useState(!permissionPrompted && !coords);
 
-  const currentPage = navItems.find(n => {
-    if (n.exact) return location.pathname === n.to;
-    return location.pathname.startsWith(n.to) && n.to !== '/dashboard';
-  }) || navItems[0];
+  const isActive = (to, exact) => {
+    if (exact) return location.pathname === to;
+    return location.pathname.startsWith(to) && to !== '/dashboard';
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#09090b] flex">
+    <div className="min-h-screen bg-white text-[#09090b] flex flex-col font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900">
       {/* GPS Modal */}
       <GPSLocationModal
         isOpen={showGPSModal}
@@ -127,108 +53,151 @@ export default function FarmerLayout() {
         error={gpsError}
       />
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 fixed top-0 left-0 h-screen z-40" aria-label="Sidebar navigasi">
-        <SidebarNav />
-      </aside>
+      {/* Evasion Floating Pill Header */}
+      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-6xl transition-all duration-300">
+        <div className="bg-white/85 backdrop-blur-md border border-[#e4e4e7] rounded-full px-5 py-2.5 flex items-center justify-between shadow-sm">
+          {/* Brand Logo */}
+          <Link to="/dashboard" className="flex items-center gap-2 font-medium tracking-tight text-base text-[#09090b] hover:opacity-80 transition-opacity">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+            <span className="font-semibold">RamalTani</span>
+            <span className="hidden sm:inline text-xs text-[#71717a] font-normal border-l border-[#e4e4e7] pl-2 ml-0.5">Petani</span>
+          </Link>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-          <div className="relative flex flex-col w-64 max-w-[85vw] h-full shadow-xl">
-            <SidebarNav onClose={() => setSidebarOpen(false)} />
-          </div>
-        </div>
-      )}
+          {/* Center Navigation Links (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Menu navigasi utama">
+            {navItems.map(item => {
+              const active = isActive(item.to, item.exact);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    active
+                      ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-xs'
+                      : 'text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5]'
+                  }`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-      {/* Main content */}
-      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
-        {/* Top header */}
-        <header className="sticky top-0 z-30 bg-white border-b border-[#e4e4e7] px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5] transition-colors"
-              aria-label="Buka menu navigasi"
-            >
-              <Menu size={20} />
-            </button>
-            <div>
-              <h1 className="text-base font-semibold text-[#09090b] leading-tight tracking-tight">
-                {currentPage?.label || 'Dashboard'}
-              </h1>
-              <span className="hidden sm:block text-xs text-[#71717a]">
-                Prakiraan cuaca & rekomendasi tanam
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* GPS pill */}
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* GPS Location Pill */}
             <button
               onClick={() => setShowGPSModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e4e4e7] hover:border-emerald-200 hover:bg-emerald-50 text-xs font-medium text-[#09090b] transition-all"
-              title="Klik untuk mengubah koordinat GPS"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4e4e7] hover:border-emerald-300 text-xs text-[#09090b] transition-all bg-white hover:bg-emerald-50/50 shadow-xs"
+              title="Klik untuk ubah koordinat lahan"
             >
               <Crosshair size={12} className={coords?.isGPS ? 'text-emerald-600' : 'text-[#71717a]'} />
-              <span className="truncate max-w-[120px] sm:max-w-[160px]">
-                {coords?.regionName || nearestRegion?.name || 'Pilih Lokasi'}
+              <span className="truncate max-w-[90px] sm:max-w-[130px] font-medium">
+                {coords?.regionName || nearestRegion?.name || 'Klaten'}
               </span>
-              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                coords?.isGPS ? 'bg-emerald-100 text-emerald-700' : 'bg-[#f4f4f5] text-[#71717a]'
-              }`}>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded font-mono">
                 {coords?.isGPS ? 'GPS' : 'Manual'}
               </span>
             </button>
 
+            {/* Notifications link */}
             <Link
               to="/dashboard/peringatan"
-              className="relative p-2 rounded-lg text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5] transition-colors"
-              aria-label="Notifikasi"
+              className="relative p-1.5 text-[#71717a] hover:text-[#09090b] transition-colors rounded-full hover:bg-[#f4f4f5]"
+              aria-label="Peringatan dini"
             >
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <Bell size={16} />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-600" />
             </Link>
 
+            {/* Profile Avatar / Link */}
             <Link
               to="/dashboard/profil"
-              className="hidden sm:flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-[#f4f4f5] transition-colors border border-[#e4e4e7]"
-              aria-label="Profil pengguna"
+              className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-[#f4f4f5] text-xs font-medium text-[#09090b] transition-colors border border-transparent hover:border-[#e4e4e7]"
+              aria-label="Profil petani"
             >
-              <span className="text-xs font-medium text-[#09090b] max-w-[80px] truncate">
+              <span className="hidden sm:inline truncate max-w-[80px]">
                 {user?.name?.split(' ')[0] || 'Petani'}
               </span>
-              <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+              <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px] font-medium">
                 {user?.name?.charAt(0) || 'P'}
               </div>
             </Link>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-1.5 text-[#71717a] hover:text-[#09090b] rounded-full hover:bg-[#f4f4f5] transition-colors"
+              aria-label={mobileMenuOpen ? "Tutup navigasi" : "Buka navigasi"}
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
-        </header>
+        </div>
 
-        {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 pb-24 lg:pb-8" id="main-content">
-          <Outlet context={{ coords, nearestRegion, requestGPS, openGPSModal: () => setShowGPSModal(true) }} />
-        </main>
-
-        {/* Mobile bottom nav */}
-        <nav className="mobile-nav lg:hidden" aria-label="Navigasi bawah mobile">
-          {navItems.slice(0, 5).map(item => {
-            const active = location.pathname === item.to || (location.pathname.startsWith(item.to) && item.to !== '/dashboard');
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`mobile-nav-item ${active ? 'active' : ''}`}
-                aria-current={active ? 'page' : undefined}
+        {/* Mobile Dropdown Menu (Evasion-style overlay) */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden mt-2 bg-white/95 backdrop-blur-md border border-[#e4e4e7] rounded-3xl p-4 shadow-xl animate-slide-up">
+            <div className="space-y-1 pb-3 border-b border-[#e4e4e7]">
+              {navItems.map(item => {
+                const active = isActive(item.to, item.exact);
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      active
+                        ? 'bg-emerald-50 text-emerald-800 font-semibold'
+                        : 'text-[#71717a] hover:text-[#09090b] hover:bg-[#f4f4f5]'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <ChevronRight size={14} className={active ? 'text-emerald-600' : 'text-[#d4d4d8]'} />
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="pt-3 flex items-center justify-between px-2">
+              <div className="text-xs text-[#71717a]">
+                <div className="font-medium text-[#09090b]">{user?.name}</div>
+                <div>{user?.location || 'Klaten, Jawa Tengah'}</div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-rose-600 hover:bg-rose-50 font-medium transition-colors"
               >
-                <span className={active ? 'text-emerald-600' : 'text-[#a1a1aa]'}>{item.icon}</span>
-                <span>{item.label.split(' ')[0]}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+                <LogOut size={13} />
+                <span>Keluar</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Main Content Area — Expansive, Minimalist, Full-width flow */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24" id="main-content">
+        <Outlet context={{ coords, nearestRegion, requestGPS, openGPSModal: () => setShowGPSModal(true) }} />
+      </main>
+
+      {/* Clean Minimalist Evasion Footer */}
+      <footer className="border-t border-[#e4e4e7] bg-white py-10 text-xs text-[#71717a] mt-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-600" />
+            <span className="font-medium text-[#09090b]">RamalTani</span>
+            <span>— Platform Iklim & Pertanian Cerdas</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-5">
+            <Link to="/dashboard" className="hover:text-[#09090b] transition-colors">Beranda</Link>
+            <Link to="/dashboard/rekomendasi" className="hover:text-[#09090b] transition-colors">Rekomendasi</Link>
+            <Link to="/dashboard/peta-risiko" className="hover:text-[#09090b] transition-colors">Peta Risiko</Link>
+            <Link to="/dashboard/riwayat" className="hover:text-[#09090b] transition-colors">Riwayat</Link>
+            <Link to="/dashboard/edukasi" className="hover:text-[#09090b] transition-colors">Edukasi</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -37,18 +37,16 @@ export default function AdminDashboard() {
 
   return (
     <div ref={containerRef} className="max-w-6xl mx-auto text-[#09090b] page-enter">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
-            <Sparkles size={12} />
-            System Administration
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-[#09090b] tracking-tight">Pusat Kendali Sistem & Telemetri</h1>
-          <p className="text-[#71717a] text-sm mt-1">
-            Monitoring uptime gateway API BMKG, audit log sistem, dan manajemen hak akses pengguna.
-          </p>
-        </div>
-        <DemoBadge />
+      <div className="mb-10">
+        <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-3">
+          System Administration & Telemetry
+        </p>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
+          Pusat Kendali Sistem
+        </h1>
+        <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-xl leading-relaxed">
+          Monitoring uptime gateway API BMKG, audit log sistem, dan manajemen hak akses pengguna.
+        </p>
       </div>
 
       {/* System stats */}
