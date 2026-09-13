@@ -29,11 +29,26 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: [
-    config.cors.frontendUrl,
-    'http://localhost:5173',
-    'http://localhost:3000',
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      config.nodeEnv === 'development' ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      /^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    const allowed = [
+      config.cors.frontendUrl,
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ];
+    if (allowed.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -181,8 +196,8 @@ app.use(errorHandler);
 const PORT = config.port;
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`\n🌾 RamalTani API berjalan di http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🌾 RamalTani API berjalan di http://0.0.0.0:${PORT}`);
     console.log(`🔑 Kinde Auth endpoint: http://localhost:${PORT}/login`);
     console.log(`📡 BMKG API: ${config.bmkg.baseUrl}`);
     console.log(`🌤️  Open-Meteo: ${config.openMeteo.baseUrl}`);
@@ -192,7 +207,7 @@ if (require.main === module) {
 
   if (PORT !== 3000) {
     try {
-      const server3000 = app.listen(3000, () => {
+      const server3000 = app.listen(3000, '0.0.0.0', () => {
         console.log(`🔗 Kinde Callback Bridge aktif di http://localhost:3000/callback\n`);
       });
       server3000.on('error', (e) => console.log('Port 3000 callback listener note:', e.message));

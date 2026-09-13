@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Leaf, AlertCircle, CheckCircle } from 'lucide-react';
+import { Leaf, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function KindeCallbackPage() {
@@ -43,34 +43,44 @@ export default function KindeCallbackPage() {
   }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-6">
-      <div className="w-full max-w-md text-center">
-        <div className="w-14 h-14 rounded-2xl bg-padi-500 text-white flex items-center justify-center mx-auto mb-6 shadow-lg shadow-padi-500/20">
+    <div className="min-h-screen bg-white text-[#09090b] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="w-full max-w-md text-center relative z-10">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/10">
           <Leaf size={28} />
         </div>
 
         {error ? (
-          <div className="card card-body text-left">
-            <div className="flex items-start gap-3 text-bahaya mb-3">
+          <div className="rounded-2xl bg-white border border-red-500/20 p-6 text-left shadow-2xl">
+            <div className="flex items-start gap-3 text-red-400 mb-3">
               <AlertCircle size={22} className="flex-shrink-0 mt-0.5" />
               <div>
-                <h2 className="font-semibold text-ink text-base">Gagal Autentikasi Google / Kinde</h2>
-                <p className="text-sm text-muted mt-1">{error}</p>
+                <h2 className="font-medium text-white text-base">Gagal Autentikasi Google / Kinde</h2>
+                <p className="text-xs text-[#71717a] mt-1 leading-relaxed">{error}</p>
               </div>
             </div>
-            <a href="/login" className="btn btn-primary w-full justify-center mt-4">
+            <a
+              href="/login"
+              className="w-full mt-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-all flex items-center justify-center"
+            >
               Kembali ke Halaman Masuk
             </a>
           </div>
         ) : (
-          <div className="card card-body">
-            <div className="flex flex-col items-center py-4">
-              <div className="w-10 h-10 border-3 border-padi-500/30 border-t-padi-500 rounded-full animate-spin mb-4" />
-              <h2 className="font-display text-xl font-bold text-ink mb-1">
-                Autentikasi Berhasil
+          <div className="rounded-2xl bg-white border border-[#e4e4e7] p-8 shadow-2xl">
+            <div className="flex flex-col items-center py-2">
+              <div className="w-10 h-10 border-2 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin mb-4" />
+              <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-emerald-400 mb-1.5">
+                <Sparkles size={12} />
+                Sesi Terverifikasi
+              </div>
+              <h2 className="font-medium text-xl text-white font-normal mb-2">
+                Menghubungkan Akun...
               </h2>
-              <p className="text-muted text-sm max-w-xs">
-                Sedang menghubungkan profil Anda ke database server dan memuat data pertanian...
+              <p className="text-[#71717a] text-xs max-w-xs leading-relaxed">
+                Sedang memuat profil petani Anda dan mengarahkan ke dashboard cuaca lahan.
               </p>
             </div>
           </div>

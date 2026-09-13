@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Info, AlertTriangle, CheckCircle, CloudSun, Loader, Crosshair } from 'lucide-react';
+import { MapPin, Info, AlertTriangle, CheckCircle, CloudSun, Loader, Crosshair, Sparkles } from 'lucide-react';
 import { RiskBadge, SectionHeader, LiveBMKGBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
 import { recommendationsAPI } from '../../services/api';
@@ -42,27 +42,37 @@ export default function RiskMapPage() {
     : [-7.6, 110.5];
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <SectionHeader
-        title="Peta Risiko Wilayah"
-        subtitle="Visualisasi risiko cuaca real-time per wilayah berbasis data prakiraan resmi BMKG."
-        action={
-          <div className="flex items-center gap-2">
-            {coords?.isGPS && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                <Crosshair size={12} className="text-emerald-600 animate-pulse" />
-                GPS: {coords.regionName} ({coords.distanceKm} km)
-              </span>
-            )}
-            <LiveBMKGBadge text="BMKG Resmi (Live)" />
+    <div className="max-w-6xl mx-auto text-[#09090b] animate-fade-in">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs uppercase tracking-widest mb-2">
+            <Sparkles size={12} />
+            Radar Geospasial Iklim
           </div>
-        }
-      />
+          <h1 className="font-medium text-2xl sm:text-3xl text-white font-normal">Peta Risiko Wilayah</h1>
+          <p className="text-[#71717a] text-sm mt-1">
+            Visualisasi risiko hidrometeorologi real-time per wilayah berbasis telemetry satelit dan BMKG.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          {coords?.isGPS && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+              <Crosshair size={12} className="text-emerald-400 animate-pulse" />
+              GPS: {coords.regionName} ({coords.distanceKm} km)
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            BMKG Live
+          </span>
+        </div>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Map */}
+        {/* Map Container */}
         <div className="lg:col-span-2">
-          <div className="card overflow-hidden" style={{ height: '480px' }}>
+          <div className="rounded-2xl border border-[#e4e4e7] overflow-hidden shadow-2xl relative" style={{ height: '490px' }}>
             <MapContainer
               center={mapCenter}
               zoom={9}
@@ -70,7 +80,7 @@ export default function RiskMapPage() {
               aria-label="Peta risiko wilayah"
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
@@ -80,20 +90,20 @@ export default function RiskMapPage() {
                   center={[coords.latitude, coords.longitude]}
                   radius={10}
                   pathOptions={{
-                    color: '#047857',
+                    color: '#059669',
                     fillColor: '#10B981',
                     fillOpacity: 0.9,
                     weight: 3,
                   }}
                 >
                   <Popup>
-                    <div className="font-body text-ink text-xs" style={{ minWidth: 150 }}>
-                      <div className="flex items-center gap-1.5 font-bold text-emerald-800 mb-1">
+                    <div className="font-body text-slate-900 text-xs p-1" style={{ minWidth: 160 }}>
+                      <div className="flex items-center gap-1.5 font-bold text-emerald-700 mb-1">
                         <Crosshair size={13} className="text-emerald-600" />
-                        <span>Lokasi GPS Anda</span>
+                        <span>Koordinat GPS Anda</span>
                       </div>
                       <p className="text-slate-600 leading-snug">
-                        Stasiun Terdekat: <strong>{coords.regionName}</strong> (~{coords.distanceKm} km)
+                        Wilayah Terdekat: <strong>{coords.regionName}</strong> (~{coords.distanceKm} km)
                       </p>
                     </div>
                   </Popup>
@@ -117,25 +127,25 @@ export default function RiskMapPage() {
                   aria-label={`${region.regionName}: ${region.label}`}
                 >
                   <Popup>
-                    <div className="font-body text-ink" style={{ minWidth: 160 }}>
+                    <div className="font-body text-slate-900 p-1" style={{ minWidth: 170 }}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <MapPin size={14} className="text-padi-500" />
-                        <strong className="font-display text-base">{region.regionName}</strong>
+                        <MapPin size={14} className="text-emerald-600" />
+                        <strong className="font-medium text-base text-slate-950">{region.regionName}</strong>
                       </div>
-                      <div className="space-y-1 text-xs">
+                      <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-muted">Status Risiko</span>
-                          <span className="font-semibold" style={{ color: region.color }}>{region.label}</span>
+                          <span className="text-slate-500">Status Risiko</span>
+                          <span className="font-bold" style={{ color: region.color }}>{region.label}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted">Peluang Hujan</span>
-                          <span className="font-semibold">{region.rainProbability}%</span>
+                          <span className="text-slate-500">Peluang Hujan</span>
+                          <span className="font-semibold text-slate-900">{region.rainProbability}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted">Petani Terdampak</span>
-                          <span className="font-semibold">{region.affectedFarmers.toLocaleString('id-ID')}</span>
+                          <span className="text-slate-500">Petani Terdampak</span>
+                          <span className="font-semibold text-slate-900">{region.affectedFarmers.toLocaleString('id-ID')}</span>
                         </div>
-                        <div className="mt-2 pt-2 border-t border-gray-100 text-gray-500">
+                        <div className="mt-2 pt-2 border-t border-slate-200 text-slate-600">
                           {region.mainRisk}
                         </div>
                       </div>
@@ -147,102 +157,113 @@ export default function RiskMapPage() {
           </div>
 
           {/* Legend */}
-          <div className="mt-3 flex flex-wrap gap-3 items-center">
-            <span className="text-xs text-muted font-semibold">Legenda:</span>
+          <div className="mt-3 flex flex-wrap gap-4 items-center px-1">
+            <span className="text-xs font-mono text-[#71717a] uppercase">Indikator:</span>
             {[
-              { color: '#6E9F43', label: 'Aman (0-30)' },
-              { color: '#D8A83E', label: 'Perlu Perhatian (31-60)' },
-              { color: '#C07020', label: 'Berisiko (61-80)' },
-              { color: '#B03A2E', label: 'Darurat (81-100)' },
+              { color: '#10b981', label: 'Aman (0-30)' },
+              { color: '#f59e0b', label: 'Perlu Perhatian (31-60)' },
+              { color: '#f97316', label: 'Berisiko (61-80)' },
+              { color: '#ef4444', label: 'Darurat (81-100)' },
             ].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: l.color }} aria-hidden="true" />
-                <span className="text-xs text-muted">{l.label}</span>
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: l.color }} aria-hidden="true" />
+                <span className="text-xs font-mono text-[#71717a]">{l.label}</span>
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted mt-1">Peta: © OpenStreetMap contributors</p>
+          <p className="text-[11px] font-mono text-[#71717a] mt-1 px-1">Peta Dasar: © OpenStreetMap contributors</p>
         </div>
 
-        {/* Region list */}
+        {/* Region List */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-base text-ink">Wilayah Pemantauan</h2>
-            <span className="text-xs text-muted">9 Wilayah Aktif</span>
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="font-medium text-base text-white font-normal">Wilayah Pemantauan</h2>
+            <span className="text-xs font-mono text-[#71717a]">9 Wilayah Aktif</span>
           </div>
-          {riskData.map((region) => (
-            <button
-              key={region.regionId}
-              onClick={() => setSelectedRegion(selectedRegion?.regionId === region.regionId ? null : region)}
-              className={`w-full text-left card card-body transition-all ${
-                selectedRegion?.regionId === region.regionId
-                  ? 'border-2 shadow-card-hover'
-                  : 'hover:shadow-card-hover'
-              }`}
-              style={selectedRegion?.regionId === region.regionId ? { borderColor: region.color } : {}}
-              aria-pressed={selectedRegion?.regionId === region.regionId}
-              aria-label={`${region.regionName}: skor risiko ${region.score}, status ${region.label}`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <MapPin size={14} className="text-muted" aria-hidden="true" />
-                  <span className="font-semibold text-ink text-sm">{region.regionName}</span>
-                  {coords?.regionId === region.regionId && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
-                      <Crosshair size={10} className="text-emerald-600" /> GPS
-                    </span>
-                  )}
+
+          <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
+            {riskData.map((region) => (
+              <button
+                key={region.regionId}
+                onClick={() => setSelectedRegion(selectedRegion?.regionId === region.regionId ? null : region)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  selectedRegion?.regionId === region.regionId
+                    ? 'bg-[#181D26] shadow-lg'
+                    : 'bg-white border-[#e4e4e7] hover:border-[#d4d4d8]'
+                }`}
+                style={selectedRegion?.regionId === region.regionId ? { borderColor: region.color } : {}}
+                aria-pressed={selectedRegion?.regionId === region.regionId}
+                aria-label={`${region.regionName}: skor risiko ${region.score}, status ${region.label}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-[#71717a]" aria-hidden="true" />
+                    <span className="font-medium text-white text-sm">{region.regionName}</span>
+                    {coords?.regionId === region.regionId && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-full">
+                        GPS
+                      </span>
+                    )}
+                  </div>
+                  <RiskBadge label={region.label} badge={region.label} />
                 </div>
-                <RiskBadge label={region.label} badge={region.label} />
-              </div>
-              <div className="h-1.5 bg-border rounded-full overflow-hidden mb-1.5">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{ width: `${region.score}%`, backgroundColor: region.color }}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted">
-                <span>Skor: {region.score}/100</span>
-                <span>{region.rainProbability}% hujan</span>
-              </div>
-              <p className="text-xs text-muted mt-1 leading-relaxed">{region.mainRisk}</p>
-            </button>
-          ))}
+
+                <div className="h-1.5 bg-[#fafafa] rounded-full overflow-hidden mb-2 border border-[#e4e4e7]">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${region.score}%`, backgroundColor: region.color }}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs font-mono text-[#71717a]">
+                  <span>Skor: {region.score}/100</span>
+                  <span>{region.rainProbability}% hujan</span>
+                </div>
+
+                <p className="text-xs text-[#71717a] mt-1.5 leading-relaxed">{region.mainRisk}</p>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Selected region detail */}
+      {/* Selected Region Detail */}
       {selectedRegion && (
-        <div className="mt-5 card card-body border-2 animate-slide-up" style={{ borderColor: selectedRegion.color }}>
-          <div className="flex items-start justify-between mb-3">
+        <div className="mt-6 rounded-2xl bg-white border-2 p-6 shadow-2xl animate-slide-up" style={{ borderColor: selectedRegion.color }}>
+          <div className="flex items-start justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-display text-lg text-ink">{selectedRegion.regionName}</h3>
-                <LiveBMKGBadge text="Data BMKG Terkini" />
+                <h3 className="font-medium text-xl text-white font-normal">{selectedRegion.regionName}</h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  BMKG Terkini
+                </span>
               </div>
-              <p className="text-sm text-muted mt-0.5">{selectedRegion.mainRisk}</p>
+              <p className="text-sm text-[#71717a] mt-1">{selectedRegion.mainRisk}</p>
             </div>
             <RiskBadge label={selectedRegion.label} badge={selectedRegion.label} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <div className="text-xs text-muted mb-1">Skor Risiko</div>
-              <div className="font-display text-2xl font-bold" style={{ color: selectedRegion.color }}>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#e4e4e7]">
+            <div className="p-4 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+              <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1">Skor Risiko</div>
+              <div className="font-medium text-2xl font-normal" style={{ color: selectedRegion.color }}>
                 {selectedRegion.score}
               </div>
-              <div className="text-xs text-muted">dari 100</div>
+              <div className="text-xs text-[#71717a]">dari indeks 100</div>
             </div>
-            <div>
-              <div className="text-xs text-muted mb-1">Peluang Hujan</div>
-              <div className="font-display text-2xl font-bold text-ink">{selectedRegion.rainProbability}%</div>
+            <div className="p-4 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+              <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1">Peluang Hujan</div>
+              <div className="font-medium text-2xl font-normal text-white">{selectedRegion.rainProbability}%</div>
+              <div className="text-xs text-[#71717a]">akumulasi harian</div>
             </div>
-            <div>
-              <div className="text-xs text-muted mb-1">Petani Terdampak</div>
-              <div className="font-display text-2xl font-bold text-ink">
+            <div className="p-4 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+              <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1">Petani Terdampak</div>
+              <div className="font-medium text-2xl font-normal text-white">
                 {selectedRegion.affectedFarmers.toLocaleString('id-ID')}
               </div>
-              <div className="text-xs text-muted">estimasi petani terdaftar</div>
+              <div className="text-xs text-[#71717a]">estimasi petani terdaftar</div>
             </div>
           </div>
         </div>

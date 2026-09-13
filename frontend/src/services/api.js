@@ -3,7 +3,34 @@
  */
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+export const getBackendHost = () => {
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    return window.location.hostname;
+  }
+  return 'localhost';
+};
+
+export const getBackendBaseUrl = () => {
+  const host = getBackendHost();
+  return `http://${host}:5001`;
+};
+
+export const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    try {
+      const parsed = new URL(envUrl);
+      if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+        parsed.hostname = getBackendHost();
+        return parsed.toString().replace(/\/$/, '');
+      }
+      return envUrl;
+    } catch (_) {}
+  }
+  return `${getBackendBaseUrl()}/api`;
+};
+
+const BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: BASE_URL,

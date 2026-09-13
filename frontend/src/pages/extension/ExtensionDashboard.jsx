@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, AlertTriangle, BarChart2, CheckCircle, MapPin, Send, X } from 'lucide-react';
+import { Users, AlertTriangle, BarChart2, CheckCircle, MapPin, Send, X, Sparkles } from 'lucide-react';
 import { SectionHeader, LiveBMKGBadge, RiskBadge } from '../../components/ui';
 import { DEMO_RISK_DATA } from '../../data/mockData';
 import { recommendationsAPI } from '../../services/api';
@@ -8,21 +8,25 @@ import {
 } from 'recharts';
 
 const STATS = [
-  { label: 'Petani Binaan', value: '184', sub: 'Wilayah Binaan', icon: <Users size={22} />, color: 'padi' },
-  { label: 'Wilayah Berisiko', value: '3', sub: 'dari 9 wilayah pantauan', icon: <AlertTriangle size={22} />, color: 'panen' },
-  { label: 'Potensi Cuaca Ekstrem', value: '8%', sub: 'Peringatan BMKG', icon: <BarChart2 size={22} />, color: 'tanah' },
-  { label: 'Petani Aktif', value: '89%', sub: 'Terhubung platform', icon: <CheckCircle size={22} />, color: 'daun' },
+  { label: 'Petani Binaan', value: '184', sub: 'Wilayah Binaan', icon: <Users size={20} />, color: 'emerald' },
+  { label: 'Wilayah Berisiko', value: '3', sub: 'dari 9 wilayah pantauan', icon: <AlertTriangle size={20} />, color: 'amber' },
+  { label: 'Potensi Cuaca Ekstrem', value: '8%', sub: 'Peringatan BMKG', icon: <BarChart2 size={20} />, color: 'rose' },
+  { label: 'Petani Terhubung', value: '89%', sub: 'Platform live aktif', icon: <CheckCircle size={20} />, color: 'teal' },
 ];
 
-const colorMap = { padi: '#6E9F43', panen: '#D8A83E', tanah: '#8A684A', daun: '#3F6B3B' };
-const bgMap = { padi: 'bg-padi-50 text-padi-600', panen: 'bg-panen-50 text-panen-600', tanah: 'bg-tanah-50 text-tanah-600', daun: 'bg-daun-50 text-daun-600' };
+const bgMap = {
+  emerald: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+  amber: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+  rose: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+  teal: 'bg-teal-500/10 text-teal-400 border border-teal-500/20',
+};
 
 const CROP_DATA = [
-  { name: 'Padi', value: 67, fill: '#6E9F43' },
-  { name: 'Jagung', value: 15, fill: '#D8A83E' },
-  { name: 'Cabai', value: 10, fill: '#B03A2E' },
-  { name: 'Kedelai', value: 4, fill: '#3F6B3B' },
-  { name: 'Lainnya', value: 4, fill: '#8A684A' },
+  { name: 'Padi', value: 67, fill: '#10b981' },
+  { name: 'Jagung', value: 15, fill: '#f59e0b' },
+  { name: 'Cabai', value: 10, fill: '#f43f5e' },
+  { name: 'Kedelai', value: 4, fill: '#14b8a6' },
+  { name: 'Lainnya', value: 4, fill: '#8b5cf6' },
 ];
 
 const MONTHLY_DATA = [
@@ -61,82 +65,96 @@ export default function ExtensionDashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <SectionHeader
-        title="Dashboard Penyuluh"
-        subtitle="Ringkasan pemantauan iklim pertanian dan wilayah binaan berbasis data BMKG Resmi"
-        action={<LiveBMKGBadge text="BMKG Resmi (Live)" />}
-      />
+    <div className="max-w-6xl mx-auto text-[#09090b] animate-fade-in">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2">
+            <Sparkles size={12} />
+            Command Center Penyuluh (PPL)
+          </div>
+          <h1 className="font-medium text-2xl sm:text-3xl text-white font-normal">Dashboard Penyuluh Pertanian</h1>
+          <p className="text-[#71717a] text-sm mt-1">
+            Monitoring dinamika iklim, kesiapan tanam kelompok tani, dan mitigasi risiko wilayah binaan.
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          BMKG Live Feed
+        </span>
+      </div>
 
-      {/* Stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {STATS.map((s, i) => (
-          <div key={i} className="card card-body">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${bgMap[s.color]}`}>
+          <div key={i} className="rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-xl">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${bgMap[s.color]}`}>
               {s.icon}
             </div>
-            <div className="font-display text-2xl font-bold text-ink">{s.value}</div>
-            <div className="text-sm font-semibold text-ink">{s.label}</div>
-            <div className="text-xs text-muted">{s.sub}</div>
+            <div className="font-medium text-2xl font-normal text-white">{s.value}</div>
+            <div className="text-xs font-medium text-white mt-1">{s.label}</div>
+            <div className="text-[11px] font-mono text-[#71717a] mt-0.5">{s.sub}</div>
           </div>
         ))}
       </div>
 
+      {/* Charts Row */}
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         {/* Activity chart */}
-        <div className="lg:col-span-2 card card-body">
-          <h2 className="font-display text-base text-ink mb-4">Aktivitas Tanam & Panen (6 Bulan)</h2>
-          <ResponsiveContainer width="100%" height={180}>
+        <div className="lg:col-span-2 rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl">
+          <h2 className="font-medium text-base text-white font-normal mb-4">Aktivitas Tanam & Panen Kelompok (6 Bulan)</h2>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={MONTHLY_DATA}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECE9" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ fontFamily: 'Plus Jakarta Sans', fontSize: 12, borderRadius: 8 }} />
-              <Bar dataKey="tanam" name="Tanam" fill="#6E9F43" radius={[4,4,0,0]} />
-              <Bar dataKey="panen" name="Panen" fill="#D8A83E" radius={[4,4,0,0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#717684' }} stroke="rgba(255,255,255,0.1)" />
+              <YAxis tick={{ fontSize: 11, fill: '#717684' }} stroke="rgba(255,255,255,0.1)" />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#13161C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 12 }}
+              />
+              <Bar dataKey="tanam" name="Tanam" fill="#10b981" radius={[4,4,0,0]} />
+              <Bar dataKey="panen" name="Panen" fill="#f59e0b" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Crop distribution */}
-        <div className="card card-body">
-          <h2 className="font-display text-base text-ink mb-4">Distribusi Komoditas</h2>
-          <div className="flex justify-center mb-3">
-            <PieChart width={160} height={160}>
-              <Pie data={CROP_DATA} cx={75} cy={75} innerRadius={45} outerRadius={70} dataKey="value">
+        <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl flex flex-col justify-between">
+          <h2 className="font-medium text-base text-white font-normal mb-2">Distribusi Komoditas Lahan</h2>
+          <div className="flex justify-center my-auto">
+            <PieChart width={160} height={150}>
+              <Pie data={CROP_DATA} cx={75} cy={70} innerRadius={42} outerRadius={68} dataKey="value">
                 {CROP_DATA.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
               </Pie>
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={{ fontFamily: 'Plus Jakarta Sans', fontSize: 11, borderRadius: 8 }} />
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={{ backgroundColor: '#13161C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 11 }} />
             </PieChart>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 pt-3 border-t border-[#e4e4e7]">
             {CROP_DATA.map(c => (
               <div key={c.name} className="flex items-center gap-2 text-xs">
-                <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.fill }} />
-                <span className="flex-1 text-muted">{c.name}</span>
-                <span className="font-semibold text-ink">{c.value}%</span>
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.fill }} />
+                <span className="flex-1 text-[#71717a]">{c.name}</span>
+                <span className="font-mono font-bold text-white">{c.value}%</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Regional risk */}
+      {/* Regional Risk & Farmers List */}
       <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        <div className="card card-body">
+        <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-base text-ink">Risiko per Wilayah (Live BMKG)</h2>
-            <span className="text-xs text-muted">Diperbarui real-time</span>
+            <h2 className="font-medium text-base text-white font-normal">Risiko per Wilayah (Live BMKG)</h2>
+            <span className="text-[11px] font-mono text-emerald-400">Sinkronisasi Realtime</span>
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {riskList.slice(0, 6).map(r => (
               <div key={r.regionId} className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 w-28 flex-shrink-0">
-                  <MapPin size={12} className="text-muted" />
-                  <span className="text-sm font-semibold text-ink truncate">{r.regionName}</span>
+                <div className="flex items-center gap-1.5 w-32 flex-shrink-0">
+                  <MapPin size={13} className="text-[#71717a]" />
+                  <span className="text-sm font-medium text-white truncate">{r.regionName}</span>
                 </div>
-                <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${r.score}%`, backgroundColor: r.color }} />
+                <div className="flex-1 h-2 bg-[#fafafa] rounded-full overflow-hidden border border-[#e4e4e7]">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${r.score}%`, backgroundColor: r.color }} />
                 </div>
                 <RiskBadge badge={r.label} label={r.label} className="flex-shrink-0" />
               </div>
@@ -145,8 +163,8 @@ export default function ExtensionDashboard() {
         </div>
 
         {/* Farmer list */}
-        <div className="card card-body">
-          <h2 className="font-display text-base text-ink mb-4">Petani Binaan Terkini</h2>
+        <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl">
+          <h2 className="font-medium text-base text-white font-normal mb-4">Petani Binaan Terkini</h2>
           <div className="space-y-3">
             {[
               { name: 'Budi Santoso', village: 'Karanglo', crop: 'Padi', status: 'Aktif', risk: 'Aman' },
@@ -154,13 +172,13 @@ export default function ExtensionDashboard() {
               { name: 'Joko Widodo', village: 'Karanglo', crop: 'Padi', status: 'Aktif', risk: 'Aman' },
               { name: 'Agus Setiawan', village: 'Bayat', crop: 'Padi', status: 'Aktif', risk: 'Perlu Perhatian' },
             ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-padi-100 flex items-center justify-center text-padi-700 font-bold text-sm flex-shrink-0">
+              <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] hover:border-[#e4e4e7] transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs flex-shrink-0">
                   {f.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-ink">{f.name}</div>
-                  <div className="text-xs text-muted">{f.village} · {f.crop}</div>
+                  <div className="text-sm font-medium text-white">{f.name}</div>
+                  <div className="text-xs text-[#71717a]">{f.village} · {f.crop}</div>
                 </div>
                 <RiskBadge badge={f.risk} label={f.risk} />
               </div>
@@ -169,60 +187,89 @@ export default function ExtensionDashboard() {
         </div>
       </div>
 
-      {/* Broadcast */}
-      <div className="card card-body">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-base text-ink">Broadcast Pesan</h2>
-          <button onClick={() => setShowBroadcast(true)} className="btn btn-primary btn-sm">
-            <Send size={14} /> Kirim Broadcast
+      {/* Broadcast Banner */}
+      <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="font-medium text-lg text-white font-normal">Siaran Peringatan & Panduan Musim</h2>
+            <p className="text-xs text-[#71717a] mt-0.5">
+              Kirim instruksi mitigasi cuaca serentak ke 184 petani binaan via WhatsApp, SMS, dan In-App.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowBroadcast(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-all shadow-lg shadow-emerald-500/20"
+          >
+            <Send size={14} />
+            <span>Kirim Broadcast</span>
           </button>
         </div>
 
         {broadcastSent && (
-          <div className="alert-success mb-4 animate-fade-in">
+          <div className="mt-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2.5 text-xs animate-fade-in">
             <CheckCircle size={16} />
-            <span className="text-sm font-semibold">Broadcast berhasil dikirim ke {broadcastSent.count} petani! (Demo)</span>
+            <span className="font-medium">Broadcast berhasil didistribusikan ke {broadcastSent.count} petani!</span>
           </div>
         )}
 
-        <div className="text-sm text-muted">
-          Kirim pesan ke semua petani binaan melalui WhatsApp, SMS, atau notifikasi dalam aplikasi.
-        </div>
-
         {showBroadcast && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
-              <div className="p-5 border-b border-border flex items-center justify-between">
-                <h3 className="font-display text-lg text-ink">Kirim Broadcast</h3>
-                <button onClick={() => setShowBroadcast(false)} className="text-muted hover:text-ink p-1 rounded-lg transition-colors">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+            <div className="bg-white border border-[#e4e4e7] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+              <div className="p-5 border-b border-[#e4e4e7] flex items-center justify-between">
+                <h3 className="font-medium text-lg text-white font-normal">Siaran PPL ke Petani</h3>
+                <button onClick={() => setShowBroadcast(false)} className="text-[#71717a] hover:text-white p-1 rounded-lg transition-colors">
                   <X size={18} />
                 </button>
               </div>
               <form onSubmit={handleBroadcast} className="p-5 space-y-4">
                 <div>
-                  <label className="form-label">Judul Pesan</label>
-                  <input type="text" value={broadcastForm.title} onChange={e => setBroadcastForm(f => ({...f, title: e.target.value}))} className="form-input" placeholder="Peringatan Cuaca" required />
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#71717a] mb-1.5">Judul Siaran</label>
+                  <input
+                    type="text"
+                    value={broadcastForm.title}
+                    onChange={e => setBroadcastForm(f => ({...f, title: e.target.value}))}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 text-sm"
+                    placeholder="Peringatan Curah Hujan Dasarian"
+                    required
+                  />
                 </div>
                 <div>
-                  <label className="form-label">Isi Pesan</label>
-                  <textarea value={broadcastForm.message} onChange={e => setBroadcastForm(f => ({...f, message: e.target.value}))} className="form-input h-24 resize-none" placeholder="Tulis pesan broadcast..." required />
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#71717a] mb-1.5">Isi Pesan Instruksi</label>
+                  <textarea
+                    value={broadcastForm.message}
+                    onChange={e => setBroadcastForm(f => ({...f, message: e.target.value}))}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] text-white focus:outline-none focus:border-emerald-500/50 text-sm h-24 resize-none"
+                    placeholder="Tuliskan arahan lapangan untuk kelompok tani..."
+                    required
+                  />
                 </div>
                 <div>
-                  <div className="form-label">Channel Pengiriman</div>
-                  {['in_app', 'whatsapp', 'sms'].map(ch => (
-                    <label key={ch} className="flex items-center gap-2 text-sm mb-2 cursor-pointer">
-                      <input type="checkbox" checked={broadcastForm.channels.includes(ch)} onChange={e => {
-                        setBroadcastForm(f => ({...f, channels: e.target.checked ? [...f.channels, ch] : f.channels.filter(c => c !== ch)}));
-                      }} className="accent-padi-500" />
-                      {ch === 'in_app' ? 'In-App' : ch === 'whatsapp' ? 'WhatsApp' : 'SMS'}
-                    </label>
-                  ))}
+                  <div className="text-xs font-mono uppercase tracking-wider text-[#71717a] mb-2">Saluran Penerima</div>
+                  <div className="flex gap-4">
+                    {['in_app', 'whatsapp', 'sms'].map(ch => (
+                      <label key={ch} className="flex items-center gap-2 text-xs font-mono text-white cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={broadcastForm.channels.includes(ch)}
+                          onChange={e => {
+                            setBroadcastForm(f => ({...f, channels: e.target.checked ? [...f.channels, ch] : f.channels.filter(c => c !== ch)}));
+                          }}
+                          className="accent-emerald-500 rounded"
+                        />
+                        {ch === 'in_app' ? 'In-App' : ch === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                      </label>
+                    ))}
+                  </div>
                 </div>
-                <div className="bg-surface rounded-lg p-3 text-xs text-muted">
-                  Preview: Pesan akan dikirim ke <strong>184 petani</strong> di wilayah Klaten.
+                <div className="bg-[#fafafa] rounded-xl p-3 text-[11px] text-[#71717a] border border-[#e4e4e7]">
+                  Target: Pesan akan disiarkan ke <strong className="text-white">184 petani</strong> di wilayah Klaten & sekitarnya.
                 </div>
-                <button type="submit" className="btn btn-primary w-full justify-center">
-                  <Send size={14} /> Kirim ke 184 Petani (Demo)
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                >
+                  <Send size={14} />
+                  <span>Kirim Broadcast Sekarang</span>
                 </button>
               </form>
             </div>

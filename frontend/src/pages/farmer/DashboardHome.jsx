@@ -3,7 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom';
 import {
   Droplets, Wind, Thermometer, CheckCircle, AlertTriangle,
   ArrowRight, Info, ChevronRight, Bell, Sprout, Radio,
-  Crosshair, X
+  Crosshair, X, Sparkles
 } from 'lucide-react';
 import { WeatherIcon } from '../../components/WeatherIcons';
 import { StatusBadge, ConfidenceBar, LoadingSkeleton } from '../../components/ui';
@@ -24,30 +24,36 @@ function Greeting({ user, locationName, coords, onOpenGPS }) {
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <p className="text-slate-500 text-sm font-medium">
-          {greet}, <span className="text-slate-900 font-bold">{user?.name || 'Petani Indonesia'}</span>
+        <p className="text-[#71717a] text-sm">
+          {greet},{' '}
+          <span className="text-white font-bold tracking-tight">
+            {user?.name || 'Petani Indonesia'}
+          </span>
         </p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-slate-500">
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs text-[#71717a] font-mono">
             {coords?.isGPS
               ? `${coords.regionName} (${coords.latitude.toFixed(2)}°, ${coords.longitude.toFixed(2)}°)`
               : (user?.location || locationName || 'Ngawi, Jawa Timur')}
           </span>
-          <span className="text-slate-300">·</span>
-          <span className="text-xs text-emerald-700 font-semibold">{user?.commodity || 'Padi'} · Musim Tanam 2026</span>
+          <span className="text-white/20">·</span>
+          <span className="text-xs text-emerald-400 font-medium">
+            {user?.commodity || 'Padi'} · Musim Tanam 2026
+          </span>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+
+      <div className="flex items-center gap-2.5">
         <button
           onClick={onOpenGPS}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white hover:bg-[#181D26] text-emerald-400 border border-emerald-500/20 transition-all shadow-sm group"
           title="Sinkronkan dengan sensor lokasi GPS perangkat"
         >
-          <Crosshair size={13} className={coords?.isGPS ? "text-emerald-600 animate-pulse" : "text-slate-400"} />
-          {coords?.isGPS ? 'Lokasi GPS Aktif' : 'Sinkronkan GPS Lahan'}
+          <Crosshair size={13} className={coords?.isGPS ? "text-emerald-400 animate-pulse" : "text-[#71717a] group-hover:text-emerald-400"} />
+          <span>{coords?.isGPS ? 'GPS Lahan Aktif' : 'Sinkronkan GPS Lahan'}</span>
         </button>
 
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white shadow-2xs">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           BMKG Live
         </span>
@@ -62,22 +68,24 @@ function AlertBanner({ alert }) {
   if (!alert || dismissed) return null;
 
   return (
-    <div className="alert-warning mb-5 animate-fade-in relative flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950" role="alert" aria-live="polite">
-      <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+    <div className="mb-5 animate-fade-in relative flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 shadow-lg" role="alert" aria-live="polite">
+      <AlertTriangle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">{alert.level || 'WASPADA'}</span>
-          <span className="text-xs text-slate-500">· {alert.source || 'BMKG'}</span>
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
+            {alert.level || 'WASPADA'}
+          </span>
+          <span className="text-xs text-amber-300/70">· {alert.source || 'BMKG'}</span>
         </div>
-        <p className="text-sm font-semibold text-slate-900">{alert.title}</p>
-        <p className="text-xs text-slate-700 mt-0.5 leading-relaxed">{alert.description || alert.message}</p>
+        <p className="text-sm font-semibold text-white">{alert.title}</p>
+        <p className="text-xs text-amber-200/80 mt-0.5 leading-relaxed">{alert.description || alert.message}</p>
       </div>
       <button
         onClick={() => setDismissed(true)}
-        className="text-slate-400 hover:text-slate-700 p-1 flex-shrink-0 transition-colors rounded-lg"
+        className="text-amber-400/60 hover:text-amber-300 p-1 flex-shrink-0 transition-colors rounded-lg"
         aria-label="Tutup peringatan"
       >
-        <X size={15} />
+        <X size={16} />
       </button>
     </div>
   );
@@ -88,16 +96,16 @@ function WeatherCard({ weather }) {
   const current = weather?.current || {};
 
   return (
-    <div className="card card-body">
+    <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl relative overflow-hidden">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h2 className="font-display text-lg text-ink">Cuaca Hari Ini</h2>
+          <h2 className="font-medium text-lg text-white font-normal">Cuaca Hari Ini</h2>
           <div className="flex items-center gap-2 mt-1">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               {weather?.source || 'BMKG Resmi'}
             </span>
-            <span className="text-xs text-muted font-medium">
+            <span className="text-xs text-[#71717a]">
               {weather?.location?.subdistrict ? `${weather.location.subdistrict}, ${weather.location.city || weather.location.name}` : (weather?.location?.name || 'Klaten')}
             </span>
           </div>
@@ -105,32 +113,32 @@ function WeatherCard({ weather }) {
         <WeatherIcon code={current.weatherCode} iconUrl={current.iconUrl} size={48} />
       </div>
 
-      <div className="flex items-end gap-4 mt-2">
+      <div className="flex items-end gap-3 mt-4">
         <div>
-          <span className="font-display text-5xl text-ink font-bold">{current.temperature ?? 28}</span>
-          <span className="text-xl text-muted font-normal">°C</span>
+          <span className="font-medium text-5xl text-white font-normal tracking-tight">{current.temperature ?? 28}</span>
+          <span className="text-xl text-[#71717a] font-light ml-1">°C</span>
         </div>
-        <div className="pb-1">
-          <p className="text-sm font-semibold text-ink">{current.description || 'Cerah Berawan'}</p>
-          <p className="text-xs text-muted">Rentang: {current.temperatureMin ?? 23}° – {current.temperatureMax ?? 32}°C</p>
+        <div className="pb-1.5">
+          <p className="text-sm font-semibold text-white">{current.description || 'Cerah Berawan'}</p>
+          <p className="text-xs text-[#71717a] font-mono">Rentang: {current.temperatureMin ?? 23}° – {current.temperatureMax ?? 32}°C</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
-        <div className="text-center">
-          <Droplets size={16} className="text-langit-500 mx-auto mb-1" aria-hidden="true" />
-          <div className="text-sm font-bold text-ink">{current.humidity ?? 75}%</div>
-          <div className="text-xs text-muted">Kelembapan</div>
+      <div className="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-[#e4e4e7]">
+        <div className="text-center p-2 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+          <Droplets size={16} className="text-sky-400 mx-auto mb-1" aria-hidden="true" />
+          <div className="text-sm font-bold text-white font-mono">{current.humidity ?? 75}%</div>
+          <div className="text-[11px] text-[#71717a]">Kelembapan</div>
         </div>
-        <div className="text-center">
-          <Thermometer size={16} className="text-red-400 mx-auto mb-1" aria-hidden="true" />
-          <div className="text-sm font-bold text-ink">{current.rainProbability ?? 20}%</div>
-          <div className="text-xs text-muted">Peluang Hujan</div>
+        <div className="text-center p-2 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+          <Thermometer size={16} className="text-amber-400 mx-auto mb-1" aria-hidden="true" />
+          <div className="text-sm font-bold text-white font-mono">{current.rainProbability ?? 20}%</div>
+          <div className="text-[11px] text-[#71717a]">Peluang Hujan</div>
         </div>
-        <div className="text-center">
-          <Wind size={16} className="text-muted mx-auto mb-1" aria-hidden="true" />
-          <div className="text-sm font-bold text-ink">{current.windSpeed ?? 10}</div>
-          <div className="text-xs text-muted">km/jam</div>
+        <div className="text-center p-2 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+          <Wind size={16} className="text-teal-400 mx-auto mb-1" aria-hidden="true" />
+          <div className="text-sm font-bold text-white font-mono">{current.windSpeed ?? 10}</div>
+          <div className="text-[11px] text-[#71717a]">km/jam</div>
         </div>
       </div>
     </div>
@@ -142,55 +150,65 @@ function RecommendationCard({ rec, weatherLocation }) {
   const r = rec?.recommendation || rec || {};
 
   return (
-    <div className="card border-l-4 border-l-padi-500 shadow-sm" role="region" aria-label="Rekomendasi tanam utama">
-      <div className="card-body">
+    <div className="rounded-2xl bg-gradient-to-br from-[#13161C] to-[#161B24] border border-emerald-500/20 p-5 sm:p-7 shadow-2xl relative overflow-hidden" role="region" aria-label="Rekomendasi tanam utama">
+      {/* Subtle Glow */}
+      <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-[90px] pointer-events-none" />
+
+      <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <span className="text-xs font-semibold text-muted uppercase tracking-wide">Analisis Kalender Tanam</span>
-            <h2 className="font-display text-2xl text-ink mt-0.5">{rec?.crop || 'Padi Sawah'}</h2>
+            <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-emerald-400 mb-1">
+              <Sparkles size={12} />
+              Analisis Kalender Tanam Terra AI
+            </div>
+            <h2 className="font-medium text-2xl sm:text-3xl text-white font-normal">{rec?.crop || 'Padi Sawah'}</h2>
           </div>
           <StatusBadge status={r.status || 'optimal'} />
         </div>
 
         {r.window && (
-          <div className="mb-4 p-4 bg-padi-50/80 rounded-xl border border-padi-200">
-            <div className="text-xs font-semibold text-padi-700 uppercase tracking-wide mb-1">Jadwal Tanam Optimal (Berdasarkan BMKG)</div>
-            <div className="font-display text-xl font-bold text-padi-900">
+          <div className="mb-5 p-4 rounded-xl bg-[#fafafa]/80 border border-emerald-500/20">
+            <div className="text-xs font-mono font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+              Jadwal Tanam Optimal (Berdasarkan BMKG)
+            </div>
+            <div className="font-medium text-xl sm:text-2xl text-white font-normal">
               {r.window.start} – {r.window.end}
             </div>
           </div>
         )}
 
-        <ConfidenceBar value={r.confidence || 88} className="mb-4" />
+        <ConfidenceBar value={r.confidence || 88} className="mb-5" />
 
-        <div className="flex items-start gap-2 mb-3">
-          <Info size={16} className="text-langit-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-sm text-ink leading-relaxed">{r.reason || 'Kondisi cuaca dan curah hujan diprakirakan mencukupi kebutuhan air masa awal pertumbuhan.'}</p>
+        <div className="flex items-start gap-2.5 mb-4 p-3 rounded-xl bg-[#fafafa] border border-[#e4e4e7]">
+          <Info size={16} className="text-sky-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs sm:text-sm text-[#09090b] leading-relaxed">
+            {r.reason || 'Kondisi cuaca dan curah hujan diprakirakan mencukupi kebutuhan air masa awal pertumbuhan.'}
+          </p>
         </div>
 
         {r.action && (
-          <div className="p-3 bg-surface rounded-lg mb-3 border border-border">
-            <div className="text-xs font-semibold text-muted uppercase tracking-wide mb-1">Langkah Lapangan Hari Ini</div>
-            <p className="text-sm font-medium text-ink">{r.action}</p>
+          <div className="p-3.5 bg-[#fafafa] rounded-xl mb-4 border border-[#e4e4e7]">
+            <div className="text-xs uppercase tracking-widest text-[#71717a] mb-1">Langkah Lapangan Hari Ini</div>
+            <p className="text-sm font-medium text-emerald-300">{r.action}</p>
           </div>
         )}
 
         {r.alternative && (
-          <div className="flex items-center gap-2 text-xs text-muted mb-2">
-            <AlertTriangle size={13} className="text-panen-500" aria-hidden="true" />
-            Alternatif: {r.alternative}
+          <div className="flex items-center gap-2 text-xs text-[#71717a] mb-2">
+            <AlertTriangle size={13} className="text-amber-400" aria-hidden="true" />
+            <span>Alternatif: {r.alternative}</span>
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+        <div className="mt-5 pt-4 border-t border-[#e4e4e7] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               Algoritma Agronomi Real-time
             </span>
-            <span className="text-xs text-muted hidden sm:inline">Lokasi: {weatherLocation || 'Klaten'}</span>
+            <span className="text-xs text-[#71717a] hidden sm:inline">Lokasi: {weatherLocation || 'Klaten'}</span>
           </div>
-          <Link to="/dashboard/rekomendasi" className="text-padi-600 text-sm font-semibold flex items-center gap-1 hover:text-padi-700 transition-colors">
+          <Link to="/dashboard/rekomendasi" className="text-emerald-400 text-sm font-semibold flex items-center gap-1 hover:text-emerald-300 transition-colors">
             Analisis Lengkap
             <ChevronRight size={14} aria-hidden="true" />
           </Link>
@@ -205,15 +223,15 @@ function ForecastTimeline({ weather }) {
   const forecast = weather?.forecast || [];
 
   return (
-    <div className="card">
-      <div className="card-body pb-3">
+    <div className="rounded-2xl bg-white border border-[#e4e4e7] shadow-xl overflow-hidden">
+      <div className="p-5 sm:p-6 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="font-display text-lg text-ink">Prakiraan 7 Hari Kedepan</h2>
-            <p className="text-xs text-muted">Kombinasi data resmi BMKG & sensor satelit resolusi tinggi</p>
+            <h2 className="font-medium text-lg text-white font-normal">Prakiraan 7 Hari Kedepan</h2>
+            <p className="text-xs text-[#71717a]">Kombinasi data resmi BMKG & sensor satelit resolusi tinggi</p>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Live BMKG
           </span>
         </div>
@@ -223,17 +241,19 @@ function ForecastTimeline({ weather }) {
           {forecast.slice(0, 7).map((day, i) => (
             <div
               key={i}
-              className={`flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl border min-w-[90px] transition-colors ${
-                i === 0 ? 'bg-padi-50/70 border-padi-300 shadow-sm' : 'bg-white border-border'
+              className={`flex-shrink-0 flex flex-col items-center gap-2 p-3.5 rounded-xl border min-w-[95px] transition-all ${
+                i === 0
+                  ? 'bg-emerald-500/10 border-emerald-500/30 shadow-lg shadow-emerald-500/5'
+                  : 'bg-[#fafafa] border-[#e4e4e7] hover:border-[#e4e4e7]'
               }`}
               role="listitem"
             >
-              <span className="text-xs font-semibold text-muted text-center leading-tight">{day.dateLabel}</span>
+              <span className="text-xs font-mono text-[#71717a] text-center leading-tight">{day.dateLabel}</span>
               <WeatherIcon code={day.weatherCode} iconUrl={day.iconUrl} size={32} />
-              <span className="text-sm font-bold text-ink">{day.temperature}°C</span>
-              <span className={`text-xs font-semibold ${
-                day.rainProbability > 70 ? 'text-red-600' :
-                day.rainProbability > 40 ? 'text-panen-600' : 'text-padi-600'
+              <span className="text-sm font-bold text-white font-mono">{day.temperature}°C</span>
+              <span className={`text-[11px] font-mono font-semibold ${
+                day.rainProbability > 70 ? 'text-rose-400' :
+                day.rainProbability > 40 ? 'text-amber-400' : 'text-emerald-400'
               }`}>
                 {day.rainProbability}% hujan
               </span>
@@ -244,24 +264,25 @@ function ForecastTimeline({ weather }) {
 
       {/* Rain Chart */}
       {forecast.length > 0 && (
-        <div className="px-6 pb-5 pt-2">
-          <div className="text-xs font-semibold text-muted mb-2">Proyeksi Curah Hujan Harian (mm)</div>
-          <ResponsiveContainer width="100%" height={90}>
+        <div className="px-5 sm:px-6 pb-6 pt-2">
+          <div className="text-xs uppercase tracking-widest text-[#71717a] mb-3">Proyeksi Curah Hujan Harian (mm)</div>
+          <ResponsiveContainer width="100%" height={100}>
             <AreaChart data={forecast.slice(0, 7)} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="rainGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#9BC7D4" stopOpacity={0.5} />
-                  <stop offset="95%" stopColor="#9BC7D4" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECE9" />
-              <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: '#6B756D' }} tickFormatter={v => v.split(',')[0]} />
-              <YAxis tick={{ fontSize: 10, fill: '#6B756D' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: '#717684' }} tickFormatter={v => v.split(',')[0]} stroke="rgba(255,255,255,0.1)" />
+              <YAxis tick={{ fontSize: 10, fill: '#717684' }} stroke="rgba(255,255,255,0.1)" />
               <Tooltip
-                contentStyle={{ fontFamily: 'Plus Jakarta Sans', fontSize: 12, borderRadius: 8, border: '1px solid #D8DED9' }}
+                contentStyle={{ backgroundColor: '#13161C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 12 }}
+                itemStyle={{ color: '#10b981' }}
                 formatter={(v) => [`${v} mm`, 'Curah Hujan']}
               />
-              <Area type="monotone" dataKey="rainfallMm" stroke="#5BA3B6" fill="url(#rainGrad)" strokeWidth={2} />
+              <Area type="monotone" dataKey="rainfallMm" stroke="#10b981" fill="url(#rainGrad)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -273,18 +294,18 @@ function ForecastTimeline({ weather }) {
 // ─── Quick Stats Row ───────────────────────────────────────────────────────────
 function QuickStats() {
   const stats = [
-    { label: 'Rata-rata Hasil', value: '5.92 ton/ha', sub: 'Historis wilayah', color: 'text-padi-600' },
-    { label: 'Kesesuaian Tanam', value: 'Tinggi (88%)', sub: 'Indeks iklim BMKG', color: 'text-emerald-600' },
-    { label: 'Prakiraan Hujan', value: 'Normal', sub: 'Dasarian I September', color: 'text-langit-600' },
+    { label: 'Rata-rata Hasil', value: '5.92 ton/ha', sub: 'Historis wilayah', color: 'text-emerald-400' },
+    { label: 'Kesesuaian Tanam', value: 'Tinggi (88%)', sub: 'Indeks iklim BMKG', color: 'text-teal-400' },
+    { label: 'Prakiraan Hujan', value: 'Normal', sub: 'Dasarian I September', color: 'text-sky-400' },
   ];
 
   return (
     <div className="grid grid-cols-3 gap-3" role="list" aria-label="Statistik tanam">
       {stats.map((s, i) => (
-        <div key={i} className="card card-body text-center py-4" role="listitem">
-          <div className={`font-display text-lg sm:text-xl font-bold ${s.color}`}>{s.value}</div>
-          <div className="text-xs font-semibold text-ink mt-1">{s.label}</div>
-          <div className="text-xs text-muted">{s.sub}</div>
+        <div key={i} className="rounded-2xl bg-white border border-[#e4e4e7] p-4 text-center shadow-lg" role="listitem">
+          <div className={`font-medium text-lg sm:text-xl font-normal ${s.color}`}>{s.value}</div>
+          <div className="text-xs font-medium text-white mt-1">{s.label}</div>
+          <div className="text-[11px] text-[#71717a]">{s.sub}</div>
         </div>
       ))}
     </div>
@@ -305,10 +326,8 @@ export default function DashboardHome() {
   useEffect(() => {
     async function loadLiveData() {
       try {
-        // Priority 1: Detected or manually selected GPS region
         let regionId = coords?.regionId;
 
-        // Priority 2: Match region ID based on user profile
         if (!regionId) {
           if (user?.regionId) {
             regionId = user.regionId;
@@ -327,16 +346,13 @@ export default function DashboardHome() {
           }
         }
 
-        // Default fallback
         if (!regionId) regionId = 'reg-001';
 
-        // 1. Fetch live BMKG weather from backend
         const weatherRes = await weatherAPI.getByRegion(regionId);
         if (weatherRes.data?.data) {
           const liveWeather = weatherRes.data.data;
           setWeather(liveWeather);
 
-          // 2. Fetch live recommendation based on real BMKG weather
           try {
             const recRes = await recommendationsAPI.calculate({
               regionId,
@@ -350,7 +366,6 @@ export default function DashboardHome() {
           } catch (_) {}
         }
 
-        // 3. Fetch active weather alerts
         try {
           const alertsRes = await weatherAPI.getAlerts();
           if (alertsRes.data?.data?.length > 0) {
@@ -376,7 +391,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
+    <div className="max-w-4xl mx-auto animate-fade-in text-[#09090b]">
       <Greeting
         user={user}
         locationName={weather?.location?.name}
@@ -387,44 +402,47 @@ export default function DashboardHome() {
       {/* Active alert banner */}
       {alerts[0] && <AlertBanner alert={alerts[0]} />}
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* 1. MAIN RECOMMENDATION — Powered by live BMKG data */}
         <RecommendationCard rec={recommendation} weatherLocation={weather?.location?.name} />
 
         {/* 2. WEATHER TODAY + TODAY'S ACTION */}
-        <div className="grid sm:grid-cols-2 gap-5">
+        <div className="grid sm:grid-cols-2 gap-6">
           <WeatherCard weather={weather} />
 
           {/* Today's action card */}
-          <div className="card card-body flex flex-col gap-4">
+          <div className="rounded-2xl bg-white border border-[#e4e4e7] p-5 sm:p-6 shadow-xl flex flex-col justify-between gap-5">
             <div>
-              <h2 className="font-display text-lg text-ink mb-1">Tindakan Lapangan Hari Ini</h2>
-              <div className="flex items-start gap-3 p-3 bg-padi-50/80 rounded-xl border border-padi-200">
-                <Sprout size={18} className="text-padi-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-sm font-medium text-ink leading-relaxed">
+              <h2 className="font-medium text-lg text-white font-normal mb-3">Tindakan Lapangan Hari Ini</h2>
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <Sprout size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-xs sm:text-sm font-medium text-emerald-200 leading-relaxed">
                   Pantau prakiraan curah hujan BMKG. Siapkan persemaian padi dan periksa saluran drainase petak sawah.
                 </p>
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">Pemberitahuan Cuaca Terkini</div>
+              <div className="text-xs uppercase tracking-widest text-[#71717a] mb-2.5">
+                Pemberitahuan Cuaca Terkini
+              </div>
               <div className="space-y-2">
                 {[
                   { msg: `Suhu wilayah ${weather?.location?.name || 'Klaten'} saat ini ${weather?.current?.temperature || 28}°C (${weather?.current?.description || 'Cerah Berawan'})`, unread: true, time: 'Real-time' },
                   { msg: 'Rekomendasi tanam telah disinkronkan dengan BMKG', unread: false, time: 'Baru saja' },
                 ].map((n, i) => (
-                  <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-surface transition-colors">
-                    {n.unread && <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" aria-label="Belum dibaca" />}
-                    <span className={`text-xs flex-1 leading-snug ${n.unread ? 'font-semibold text-ink' : 'text-muted'}`}>
+                  <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#fafafa] border border-[#e4e4e7] hover:border-[#e4e4e7] transition-colors">
+                    {n.unread && <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" aria-label="Belum dibaca" />}
+                    <span className={`text-xs flex-1 leading-snug ${n.unread ? 'font-medium text-white' : 'text-[#71717a]'}`}>
                       {n.msg}
                     </span>
-                    <span className="text-xs text-muted flex-shrink-0">{n.time}</span>
+                    <span className="text-[11px] font-mono text-[#71717a] flex-shrink-0">{n.time}</span>
                   </div>
                 ))}
               </div>
-              <Link to="/dashboard/peringatan" className="flex items-center gap-1 text-padi-600 text-xs font-semibold mt-3 hover:text-padi-700 transition-colors">
-                Lihat semua peringatan <ArrowRight size={12} />
+              <Link to="/dashboard/peringatan" className="inline-flex items-center gap-1.5 text-emerald-400 text-xs font-medium mt-3.5 hover:text-emerald-300 transition-colors">
+                <span>Lihat semua peringatan</span>
+                <ArrowRight size={12} />
               </Link>
             </div>
           </div>
@@ -436,9 +454,10 @@ export default function DashboardHome() {
         {/* 4. QUICK STATS */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg text-ink">Ringkasan Iklim & Tanam</h2>
-            <Link to="/dashboard/riwayat" className="text-padi-600 text-sm font-semibold flex items-center gap-1 hover:text-padi-700">
-              Riwayat <ChevronRight size={14} />
+            <h2 className="font-medium text-lg text-white font-normal">Ringkasan Iklim & Tanam</h2>
+            <Link to="/dashboard/riwayat" className="text-emerald-400 text-sm font-medium flex items-center gap-1 hover:text-emerald-300 transition-colors">
+              <span>Riwayat</span>
+              <ChevronRight size={14} />
             </Link>
           </div>
           <QuickStats />
