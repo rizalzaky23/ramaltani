@@ -1,609 +1,674 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronRight, ArrowRight } from 'lucide-react';
-import { useScrollReveal } from '../hooks/useScrollReveal';
+import { 
+  Leaf, 
+  CloudSun, 
+  MapPin, 
+  TrendingUp, 
+  ShieldCheck, 
+  ArrowRight, 
+  CheckCircle2, 
+  Compass, 
+  Sparkles,
+  ChevronDown,
+  Layers,
+  Activity,
+  Globe2
+} from 'lucide-react';
+import { useReveal } from '../hooks/useReveal';
 
-// ─── Navbar (floating pill, transparent → frosted glass) ─────────────────────
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+// ─── Word Mask helper (Kage-style word-by-word reveal) ────────────────────────
+function WordMaskText({ text, className = '' }) {
+  const words = text.split(' ');
+  return (
+    <span className={`word-reveal ${className}`}>
+      {words.map((word, idx) => (
+        <span key={idx} className="word-mask">
+          <span className="word" style={{ '--word-delay': `${idx * 40}ms` }}>
+            {word}
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
 
+// ─── Persistent Three.js Background (SylvaHero living-green) ─────────────────
+function ThreeJsLivingBackground({ scrollY }) {
+  const iframeRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // Sync scroll & mouse to iframe for persistent 3D backdrop
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const onLoad = () => {
+      setLoaded(true);
+      try {
+        // Connect all dock navigation items
+        doc.querySelectorAll('[data-nav]').forEach((item) => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = item.getAttribute('data-nav');
+            if (target === 'login') {
+              window.location.href = '/login';
+            } else if (target === 'top') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              const el = document.getElementById(target);
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        });
+
+        // Connect hero liquid button "Mulai Pantau" to /register
+        const btn = doc.querySelector('.liquid-button--explore');
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/register';
+          });
+        }
+      } catch (_) {
+        // cross-origin guard
+      }
+    };
+    iframe.addEventListener('load', onLoad);
+
+    // Listen for navigation messages from iframe
+    const handleMessage = (e) => {
+      if (e.data?.type === 'navigate') {
+        if (e.data.target === 'top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const el = document.getElementById(e.data.target);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    // Forward pointer movement so Three.js lighting & spores track mouse
+    const handlePointerMove = (e) => {
+      try {
+        iframe.contentWindow?.postMessage(
+          { type: 'pointermove', clientX: e.clientX, clientY: e.clientY },
+          '*'
+        );
+      } catch (_) {}
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      iframe.removeEventListener('load', onLoad);
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('pointermove', handlePointerMove);
+    };
   }, []);
 
-  const links = [
-    { href: '#fitur', label: 'Fitur' },
-    { href: '#teknologi', label: 'Teknologi' },
-    { href: '#wilayah', label: 'Wilayah' },
-    { href: '#cara-kerja', label: 'Cara Kerja' },
-  ];
+  // Forward scroll position to fade out hero text inside iframe
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe || !loaded) return;
+    try {
+      iframe.contentWindow?.postMessage(
+        { type: 'scroll', scrollY, vh: window.innerHeight },
+        '*'
+      );
+    } catch (_) {}
+  }, [scrollY, loaded]);
 
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-3xl">
-      <div className={`flex items-center justify-between px-5 py-2.5 rounded-2xl transition-all duration-500 ${
-        scrolled
-          ? 'bg-white/95 backdrop-blur-xl shadow-sm border border-[#e4e4e7]'
-          : 'bg-transparent'
-      }`}>
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-emerald-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-[10px] font-bold">RT</span>
-          </div>
-          <span className={`text-sm font-medium tracking-tight transition-colors ${scrolled ? 'text-[#09090b]' : 'text-white'}`}>
-            RamalTani
-          </span>
-        </Link>
-
-        <nav className="hidden md:flex items-center gap-8">
-          {links.map(l => (
-            <a key={l.href} href={l.href}
-              className={`text-sm transition-colors ${scrolled ? 'text-[#71717a] hover:text-[#09090b]' : 'text-white/70 hover:text-white'}`}>
-              {l.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="hidden md:flex items-center gap-4">
-          <Link to="/login" className={`text-sm transition-colors ${scrolled ? 'text-[#71717a] hover:text-[#09090b]' : 'text-white/70 hover:text-white'}`}>
-            Masuk
-          </Link>
-          <Link to="/register" className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
-            scrolled ? 'bg-[#09090b] text-white hover:bg-[#3f3f46]' : 'bg-white text-[#09090b] hover:bg-white/90'
-          }`}>
-            Mulai Gratis
-          </Link>
-        </div>
-
-        <button onClick={() => setMenuOpen(!menuOpen)}
-          className={`md:hidden ${scrolled ? 'text-[#09090b]' : 'text-white'}`} aria-label="Toggle menu">
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div className="md:hidden mt-2 bg-white rounded-2xl border border-[#e4e4e7] shadow-lg p-4 space-y-3">
-          {links.map(l => (
-            <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-              className="block text-sm text-[#09090b] py-1">{l.label}</a>
-          ))}
-          <div className="pt-3 border-t border-[#e4e4e7] space-y-2">
-            <Link to="/login" onClick={() => setMenuOpen(false)}
-              className="block w-full py-2.5 text-center text-sm border border-[#e4e4e7] rounded-full text-[#09090b]">Masuk</Link>
-            <Link to="/register" onClick={() => setMenuOpen(false)}
-              className="block w-full py-2.5 text-center text-sm bg-[#09090b] text-white rounded-full">Mulai Gratis</Link>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: scrollY < 60 ? 'auto' : 'none',
+        overflow: 'hidden',
+        background: '#383b34',
+      }}
+      aria-hidden={scrollY >= 60}
+    >
+      {/* Loading Skeleton */}
+      {!loaded && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: '#4a4d44',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+          }}
+        >
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-600/80 flex items-center justify-center animate-pulse">
+              <Leaf size={24} className="text-white" />
+            </div>
+            <p className="text-xs uppercase tracking-widest text-emerald-200/60 font-mono">
+              Memuat Scene 3D...
+            </p>
           </div>
         </div>
       )}
+
+      {/* 3D Three.js Living Canvas iframe */}
+      <iframe
+        ref={iframeRef}
+        src="/ramaltani-hero.html"
+        title="RamalTani Three.js Background"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+        loading="eager"
+        style={{
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          opacity: loaded ? 1 : 0,
+          transition: 'opacity 0.8s cubic-bezier(0.22,0.61,0.36,1)',
+        }}
+      />
+      {/* Subtle bottom vignette to blend Three.js smoothly with content */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(120% 90% at 50% 10%, transparent 45%, rgba(18,22,17,0.72) 100%)',
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Floating Header (Reveals on scroll) ──────────────────────────────────────
+function FloatingNav({ isScrolled }) {
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-500 ${
+        isScrolled
+          ? 'bg-[#181e17]/85 backdrop-blur-md border-b border-white/10 shadow-2xl translate-y-0 opacity-100'
+          : '-translate-y-full opacity-0 pointer-events-none'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="flex items-center gap-2 text-white font-medium group"
+        >
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform">
+            <Leaf size={16} className="text-white" />
+          </div>
+          <span className="tracking-wide font-semibold text-sm">RamalTani</span>
+        </button>
+
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium tracking-wider uppercase text-neutral-300">
+          <button onClick={() => scrollTo('apa')} className="hover:text-emerald-400 transition-colors">
+            01 / Apa Itu
+          </button>
+          <button onClick={() => scrollTo('fitur')} className="hover:text-emerald-400 transition-colors">
+            02 / Fitur
+          </button>
+          <button onClick={() => scrollTo('cara-pakai')} className="hover:text-emerald-400 transition-colors">
+            03 / Cara Pakai
+          </button>
+          <button onClick={() => scrollTo('wilayah')} className="hover:text-emerald-400 transition-colors">
+            04 / Wilayah
+          </button>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <Link
+            to="/login"
+            className="px-4 py-2 text-xs font-medium uppercase tracking-wider text-neutral-200 hover:text-white transition-colors"
+          >
+            Masuk
+          </Link>
+          <Link
+            to="/register"
+            className="px-4 py-2 text-xs font-semibold uppercase tracking-wider bg-emerald-600 text-white rounded-full hover:bg-emerald-500 shadow-md shadow-emerald-950/50 hover:shadow-emerald-600/30 transition-all"
+          >
+            Mulai Pantau
+          </Link>
+        </div>
+      </div>
     </header>
   );
 }
 
-// ─── Hero (Evasion: sticky full-screen photo, brand text at bottom) ───────────
-function HeroSection() {
+// ─── Main Landing Page Component ──────────────────────────────────────────────
+export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
+  useReveal();
 
   useEffect(() => {
-    const onScroll = () => {
-      requestAnimationFrame(() => setScrollY(window.scrollY));
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Parallax: foto bergerak lebih lambat dari scroll
-  const imgOffset = scrollY * 0.3;
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <section className="relative bg-[#09090b]" style={{ height: '250vh' }}>
-      {/* Sticky viewport */}
-      <div className="sticky top-0 h-screen overflow-hidden">
-        <div className="relative w-full h-full">
-          {/* Parallax image */}
-          <img
-            alt="Sawah padi hijau menjelang panen di Jawa"
-            src="https://images.unsplash.com/photo-1500076656116-558758c991c1?q=80&w=2000"
-            className="absolute inset-0 w-full h-full object-cover will-change-transform"
-            style={{ transform: `translate3d(0, ${imgOffset}px, 0)` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/30" />
+    <div className="min-h-screen text-neutral-100 font-sans selection:bg-emerald-600 selection:text-white relative">
+      {/* 1. Persistent Three.js Background */}
+      <ThreeJsLivingBackground scrollY={scrollY} />
 
-          {/* Brand text — slide-in on load */}
-          <div className="absolute inset-0 flex items-end pb-16 px-6 lg:px-20 overflow-hidden">
-            <h1 className="w-full font-medium leading-[0.85] tracking-tighter text-white"
-              style={{ fontSize: 'clamp(80px, 15vw, 220px)' }}>
-              <span className="block overflow-hidden">
-                <span style={{ animation: 'heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both', display: 'block' }}>
-                  RAMAL
-                </span>
-              </span>
-              <span className="block overflow-hidden">
-                <span style={{ animation: 'heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both', display: 'block' }}>
-                  TANI
-                </span>
-              </span>
-            </h1>
-          </div>
+      {/* 2. Top Header (Scroll-revealed) */}
+      <FloatingNav isScrolled={scrollY > 260} />
 
-          {/* Scroll cue */}
-          <div className="absolute bottom-8 right-8 flex items-center gap-2"
-            style={{ animation: 'heroFadeIn 1s ease-out 1.2s both' }}>
-            <span className="text-xs text-white/50 uppercase tracking-widest hidden md:block">Scroll</span>
-            <div className="w-px h-10 bg-white/30" />
-          </div>
-        </div>
-      </div>
-
-      {/* Tagline below hero */}
-      <div className="relative bg-[#09090b] px-6 py-20 md:px-12 md:py-28 lg:px-20">
-        <p className="mx-auto max-w-2xl text-center text-2xl leading-relaxed text-white/40 md:text-3xl lg:text-[2rem] lg:leading-relaxed">
-          Data meteorologi yang rumit, diterjemahkan menjadi keputusan tanam yang sederhana dan tepat.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// ─── Featured: 2-column cards slide dari kiri + kanan ─────────────────────────
-function FeaturedSection() {
-  const ref = useScrollReveal({ threshold: 0.1 });
-
-  return (
-    <section id="fitur" className="bg-white" ref={ref}>
-      {/* Heading */}
-      <div className="px-6 pt-24 pb-10 md:px-12 lg:px-20">
-        <h2 className="reveal-blur text-3xl font-medium tracking-tight text-[#09090b] md:text-4xl lg:text-5xl max-w-lg">
-          Dua fitur utama yang mengubah cara bertani.
-        </h2>
-      </div>
-
-      {/* 2-column image cards — slide in dari kiri dan kanan */}
-      <div className="grid grid-cols-1 gap-4 px-6 pb-16 md:grid-cols-2 md:px-12 lg:px-20">
-        <Link to="/dashboard/rekomendasi" className="reveal-left block group">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
-            <img
-              alt="Petani memeriksa tanaman padi di sawah"
-              src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1000"
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            <div className="absolute bottom-6 left-6 flex items-center gap-2">
-              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20 group-hover:bg-white/30 transition-colors">
-                Rekomendasi Tanam
-              </span>
-              <span className="backdrop-blur-md px-3 py-1.5 text-xs rounded-full bg-emerald-600/80 text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Buka Fitur →
-              </span>
+      {/* 3. Hero Section Spacer + Chapter Chips */}
+      <section className="relative min-h-[100svh] flex flex-col justify-end px-6 pb-12 z-10 pointer-events-none">
+        <div className="max-w-7xl mx-auto w-full pointer-events-auto">
+          {/* Scroll Cue */}
+          <div className="flex items-center justify-end gap-3 mb-6 text-[10px] tracking-[0.28em] uppercase text-emerald-300/70 font-medium">
+            <span>Gulir Untuk Menjelajah</span>
+            <div className="w-14 h-[1px] bg-white/20 relative overflow-hidden">
+              <div className="absolute inset-0 bg-emerald-400 animate-cue" />
             </div>
           </div>
-          <div className="pt-5">
-            <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2">Fitur 01</p>
-            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight group-hover:text-emerald-700 transition-colors">
-              Jendela waktu terbaik berdasarkan probabilitas hujan BMKG 7–14 hari ke depan.
-            </h3>
-          </div>
-        </Link>
 
-        <Link to="/dashboard/peta-risiko" className="reveal-right reveal-delay-2 block group">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
-            <img
-              alt="Peta lahan pertanian dari udara"
-              src="https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?q=80&w=1000"
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            <div className="absolute bottom-6 left-6 flex items-center gap-2">
-              <span className="backdrop-blur-md px-4 py-2 text-sm font-medium rounded-full bg-[rgba(255,255,255,0.15)] text-white border border-white/20 group-hover:bg-white/30 transition-colors">
-                Peta Risiko GIS
-              </span>
-              <span className="backdrop-blur-md px-3 py-1.5 text-xs rounded-full bg-emerald-600/80 text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                Buka Radar Peta →
-              </span>
-            </div>
-          </div>
-          <div className="pt-5">
-            <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2">Fitur 02</p>
-            <h3 className="text-lg font-semibold text-[#09090b] tracking-tight group-hover:text-emerald-700 transition-colors">
-              Visualisasi zona bahaya per kecamatan dengan kode warna risiko nyata.
-            </h3>
-          </div>
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-// ─── Technology: 6-card grid dengan stagger reveal ───────────────────────────
-function TechnologySection() {
-  const ref = useScrollReveal({ threshold: 0.05 });
-
-  const items = [
-    { label: 'Cuaca', title: 'Data BMKG Real-Time', img: 'https://images.unsplash.com/photo-1561553590-267fc716698a?q=80&w=800', alt: 'Stasiun cuaca' },
-    { label: 'Prediksi', title: 'Model Curah Hujan 14 Hari', img: 'https://images.unsplash.com/photo-1504608524841-42584120d693?q=80&w=800', alt: 'Awan cuaca' },
-    { label: 'Risiko', title: 'Deteksi Anomali Iklim', img: 'https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=800', alt: 'Cuaca ekstrem' },
-    { label: 'Lokasi', title: 'GPS Lahan Presisi', img: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?q=80&w=800', alt: 'Sawah dari udara' },
-    { label: 'Peringatan', title: 'Early Warning Banjir & Kering', img: 'https://images.unsplash.com/photo-1580407196238-dac33f57c410?q=80&w=800', alt: 'Banjir lahan' },
-    { label: 'Analitik', title: 'Riwayat & Evaluasi Musim', img: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800', alt: 'Analitik pertanian' },
-  ];
-
-  return (
-    <section id="teknologi" className="bg-white border-t border-[#e4e4e7]" ref={ref}>
-      <div className="px-6 pt-20 pb-10 md:px-12 md:pt-28 lg:px-20">
-        <p className="reveal-blur text-xs uppercase tracking-widest text-[#71717a] mb-4">Teknologi</p>
-        <h2 className="reveal-up reveal-delay-1 text-3xl font-medium tracking-tight text-[#09090b] md:text-4xl lg:text-5xl max-w-lg">
-          Presisi ilmiah untuk setiap petak sawah.
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 px-6 pb-16 md:grid-cols-3 md:px-12 lg:px-20">
-        {items.map((item, i) => (
-          <div key={i} className={`group reveal-up reveal-delay-${Math.min(i + 1, 6)}`}>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
-              <img
-                alt={item.alt}
-                src={item.img}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-            </div>
-            <div className="py-5">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[#71717a]">{item.label}</p>
-              <h3 className="text-base font-semibold text-[#09090b] tracking-tight">{item.title}</h3>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-center px-6 pb-20 md:px-12 lg:px-20">
-        <Link to="/register"
-          className="reveal-up px-7 py-3 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
-          Mulai Gunakan Platform
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-// ─── Gallery: horizontal scroll tied to page scroll (Evasion signature) ───────
-function GallerySection() {
-  const sectionRef = useRef(null);
-  const trackRef = useRef(null);
-
-  const photos = [
-    { src: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200', alt: 'Sawah hijau saat fajar' },
-    { src: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=1200', alt: 'Kebun sayuran pegunungan' },
-    { src: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=1200', alt: 'Petani memanen padi' },
-    { src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=1200', alt: 'Ladang jagung luas' },
-    { src: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1200', alt: 'Pertanian saat senja' },
-    { src: 'https://images.unsplash.com/photo-1541795083-1b160cf4f3d7?q=80&w=1200', alt: 'Irigasi sawah' },
-  ];
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    const track = trackRef.current;
-    if (!section || !track) return;
-
-    let rafId = null;
-
-    const onScroll = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        const rect = section.getBoundingClientRect();
-        const viewH = window.innerHeight;
-        const sectionH = rect.height;
-
-        // Progress: 0 = section masuk bawah, 1 = section keluar atas
-        const progress = Math.min(1, Math.max(0, (viewH - rect.top) / (viewH + sectionH)));
-
-        // Gerakkan track ke kiri sesuai progress
-        const maxOffset = track.scrollWidth - window.innerWidth;
-        const offset = progress * maxOffset * 0.6;
-        track.style.transform = `translate3d(${-offset}px, 0, 0)`;
-        rafId = null;
-      });
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
-
-  return (
-    <section id="wilayah" className="bg-white border-t border-[#e4e4e7]" style={{ height: '200vh' }} ref={sectionRef}>
-      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
-        <div className="px-6 mb-8 md:px-12 lg:px-20">
-          <p className="text-xs uppercase tracking-widest text-[#71717a]">Lahan Pertanian Indonesia</p>
-        </div>
-        <div
-          ref={trackRef}
-          className="flex gap-5 pl-6 will-change-transform"
-          style={{ transition: 'transform 0.08s ease-out' }}
-        >
-          {photos.map((photo, i) => (
-            <div
-              key={i}
-              className="relative flex-shrink-0 overflow-hidden rounded-2xl"
-              style={{ height: '65vh', width: 'clamp(300px, 50vw, 650px)' }}
-            >
-              <img
-                alt={photo.alt}
-                src={photo.src}
-                loading={i < 2 ? 'eager' : 'lazy'}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── How It Works: 3-col grid dengan stagger ─────────────────────────────────
-function HowItWorksSection() {
-  const ref = useScrollReveal({ threshold: 0.05 });
-
-  const steps = [
-    { label: '01', title: 'Deteksi Lokasi GPS', desc: 'Koordinat lahan Anda terdeteksi otomatis atau pilih manual dari 8 sentra pertanian utama.', img: 'https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?q=80&w=800' },
-    { label: '02', title: 'Ambil Data BMKG', desc: 'Data cuaca real-time dari stasiun BMKG & Open-Meteo terdekat koordinat lahan Anda.', img: 'https://images.unsplash.com/photo-1561553590-267fc716698a?q=80&w=800' },
-    { label: '03', title: 'Analisis Risiko', desc: 'Algoritma menganalisis pola hujan dan menghitung probabilitas risiko gagal tanam.', img: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=800' },
-    { label: '04', title: 'Rekomendasi Konkret', desc: 'Saran langsung: tanggal mulai tanam, peringatan dini cuaca ekstrem, & alternatif waktu.', img: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800' },
-    { label: '05', title: 'Monitor Musim', desc: 'Pantau perkembangan musim tanam dan evaluasi hasil di akhir musim.', img: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800' },
-    { label: '06', title: 'Komunitas & Edukasi', desc: 'Forum komunitas petani dan pusat edukasi pertanian cerdas iklim dari para ahli.', img: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=800' },
-  ];
-
-  return (
-    <section id="cara-kerja" className="bg-white border-t border-[#e4e4e7]" ref={ref}>
-      <div className="px-6 pt-20 pb-10 md:px-12 md:pt-28 lg:px-20">
-        <p className="reveal-blur text-xs uppercase tracking-widest text-[#71717a] mb-4">Cara Kerja</p>
-        <h2 className="reveal-up reveal-delay-1 text-3xl font-medium tracking-tight text-[#09090b] md:text-4xl max-w-md">
-          Dari data ke keputusan dalam hitungan detik.
-        </h2>
-      </div>
-
-      {/* Mobile horizontal scroll */}
-      <div className="flex gap-4 overflow-x-auto px-6 pb-4 md:hidden scrollbar-hide">
-        {steps.map((step, i) => (
-          <div key={i} className="flex-shrink-0 w-[70vw]">
-            <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
-              <img alt={step.title} src={step.img} loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover" />
-            </div>
-            <div className="pt-4">
-              <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2">{step.label}</p>
-              <h3 className="text-base font-semibold text-[#09090b] mb-1 leading-snug">{step.title}</h3>
-              <p className="text-sm text-[#71717a] leading-relaxed">{step.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop 3-col */}
-      <div className="hidden md:grid md:grid-cols-3 gap-8 px-12 pb-20 lg:px-20">
-        {steps.map((step, i) => (
-          <div key={i} className={`group reveal-up reveal-delay-${Math.min(i + 1, 6)}`}>
-            <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-[#f4f4f5]">
-              <img alt={step.title} src={step.img} loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-            </div>
-            <div className="pt-5">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[#71717a]">{step.label}</p>
-              <h3 className="text-base font-semibold text-[#09090b] tracking-tight mb-2">{step.title}</h3>
-              <p className="text-sm text-[#71717a] leading-relaxed">{step.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─── Spec Bar: border-grid + full-width landscape ─────────────────────────────
-function SpecBar() {
-  const ref = useScrollReveal({ threshold: 0.1 });
-
-  const specs = [
-    { label: 'Sentra Pertanian', value: '8+' },
-    { label: 'Petani Terhubung', value: '45K+' },
-    { label: 'Akurasi BMKG', value: '94%' },
-    { label: 'Waktu Setup', value: '2 mnt' },
-  ];
-
-  return (
-    <section className="bg-white border-t border-[#e4e4e7]" ref={ref}>
-      <div className="flex justify-center py-12 px-6">
-        <Link to="/register"
-          className="reveal-up px-8 py-3.5 rounded-full bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
-          Daftar Gratis <ArrowRight size={16} />
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 border-t border-[#e4e4e7] md:grid-cols-4">
-        {specs.map((s, i) => (
-          <div key={i} className={`reveal-up reveal-delay-${i + 1} border-b border-[#e4e4e7] p-8 text-center ${
-            i < 3 ? 'border-r' : ''
-          } ${i >= 2 ? 'md:border-b-0' : ''}`}>
-            <p className="mb-2 text-xs uppercase tracking-widest text-[#71717a]">{s.label}</p>
-            <p className="font-medium text-[#09090b] text-4xl">{s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Full-width image */}
-      <div className="relative aspect-[16/9] w-full md:aspect-[21/9] overflow-hidden">
-        <img
-          alt="Pemandangan sawah dari udara — lahan pertanian Indonesia"
-          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-emerald-900/15" />
-      </div>
-    </section>
-  );
-}
-
-// ─── About: editorial paragraph ───────────────────────────────────────────────
-function AboutSection() {
-  const ref = useScrollReveal({ threshold: 0.15 });
-
-  return (
-    <section className="bg-white border-t border-[#e4e4e7]" ref={ref}>
-      <div className="px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-36">
-        <p className="reveal-blur mx-auto max-w-4xl text-2xl leading-relaxed text-[#09090b] md:text-3xl lg:text-[2.2rem] lg:leading-snug">
-          RamalTani menggabungkan data satelit Himawari-9 dengan jaringan stasiun BMKG — dirancang khusus untuk membantu petani Indonesia membuat keputusan tanam yang lebih cerdas, lebih aman, dan lebih menguntungkan di tengah ketidakpastian iklim.
-        </p>
-      </div>
-
-      <div className="reveal-scale relative aspect-[16/9] w-full overflow-hidden md:aspect-[21/9]">
-        <img
-          alt="Petani Indonesia di sawah saat panen raya"
-          src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2000"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent" />
-      </div>
-    </section>
-  );
-}
-
-// ─── FAQ ──────────────────────────────────────────────────────────────────────
-function FAQSection() {
-  const [open, setOpen] = useState(null);
-  const ref = useScrollReveal({ threshold: 0.1 });
-
-  const faqs = [
-    { q: 'Apakah RamalTani gratis untuk petani?', a: 'Ya, seluruh fitur utama tersedia gratis. Cukup daftar dan mulai pantau cuaca lahan Anda.' },
-    { q: 'Data cuaca dari mana sumbernya?', a: 'Data diambil langsung dari API resmi BMKG dan Open-Meteo dengan resolusi tinggi per koordinat.' },
-    { q: 'Apakah GPS wajib aktif?', a: 'GPS disarankan agar rekomendasi lebih presisi. Namun Anda bisa memilih wilayah secara manual.' },
-    { q: 'Berapa akurasi prediksi cuacanya?', a: 'Prediksi curah hujan 7 hari memiliki akurasi ~94% berdasarkan validasi terhadap data stasiun BMKG terdekat.' },
-    { q: 'Apakah data lahan saya aman?', a: 'Data tersimpan di server cloud aman dengan enkripsi standar industri dan tidak pernah dibagikan ke pihak ketiga.' },
-  ];
-
-  return (
-    <section className="bg-white border-t border-[#e4e4e7]" ref={ref}>
-      <div className="px-6 py-16 md:px-12 md:py-20 lg:px-20 max-w-2xl mx-auto">
-        <p className="reveal-blur text-xs uppercase tracking-widest text-[#71717a] mb-10">FAQ</p>
-        <div>
-          {faqs.map((faq, i) => (
-            <div key={i} className={`reveal-up reveal-delay-${Math.min(i + 1, 5)} border-t border-[#e4e4e7]`}>
+          {/* Chapter Chips (Kage style) */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-white/15 backdrop-blur-sm rounded-xl p-4 bg-black/20">
+            {[
+              { id: 'apa', num: '01', title: 'Apa Itu', desc: 'Data cuaca BMKG + GPS lahan' },
+              { id: 'fitur', num: '02', title: 'Fitur', desc: 'Prakiraan 14 hari & peta risiko' },
+              { id: 'cara-pakai', num: '03', title: 'Cara Pakai', desc: '5 langkah mudah bertani presisi' },
+              { id: 'wilayah', num: '04', title: 'Wilayah', desc: '8+ Provinsi lumbung pangan' },
+              { id: 'mulai', num: '05', title: 'Mulai', desc: 'Akses gratis untuk petani' },
+            ].map((ch) => (
               <button
-                className="w-full flex items-center justify-between py-5 text-left gap-4"
-                onClick={() => setOpen(open === i ? null : i)}
+                key={ch.id}
+                onClick={() => scrollToSection(ch.id)}
+                className="chapter-chip text-left group p-2 rounded-lg hover:bg-white/5 transition-all"
               >
-                <span className="text-base font-medium text-[#09090b]">{faq.q}</span>
-                <ChevronRight size={16} className={`text-[#71717a] flex-shrink-0 transition-transform duration-200 ${open === i ? 'rotate-90' : ''}`} />
+                <span className="text-xl md:text-2xl font-light text-neutral-400 group-hover:text-emerald-400 transition-colors tabular-nums">
+                  {ch.num}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[11px] font-semibold tracking-widest uppercase text-neutral-200 group-hover:text-emerald-300 transition-colors">
+                    {ch.title}
+                  </div>
+                  <div className="text-[11px] text-neutral-400 leading-snug line-clamp-1 mt-0.5">
+                    {ch.desc}
+                  </div>
+                </div>
               </button>
-              {open === i && (
-                <p className="pb-5 text-sm text-[#71717a] leading-relaxed">{faq.a}</p>
-              )}
-            </div>
-          ))}
-          <div className="border-t border-[#e4e4e7]" />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer className="bg-white">
-      <div className="border-t border-[#e4e4e7] px-6 py-14 md:px-12 lg:px-20">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-5">
-          <div className="col-span-2 md:col-span-1 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-md bg-emerald-600 flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">RT</span>
+      {/* 4. Story Container (Scrolls over Three.js background) */}
+      <div className="relative z-10 px-6 space-y-36 md:space-y-48 pb-28">
+
+        {/* ─── CHAPTER 01: APA ITU RAMALTANI? ───────────────────────────────── */}
+        <section id="apa" className="max-w-6xl mx-auto pt-20">
+          <div data-rv="up" className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            01 / Identitas & Misi
+          </div>
+
+          <h2 data-rv="up" className="text-3xl md:text-5xl lg:text-6xl font-light tracking-tight text-white leading-tight max-w-4xl mb-8">
+            <WordMaskText text="Data cuaca presisi bertemu kearifan petani nusantara." />
+          </h2>
+
+          <p data-rv="up" className="text-lg md:text-xl text-neutral-300 font-light leading-relaxed max-w-3xl mb-14">
+            RamalTani mentransformasi data meteorologi resmi BMKG, citra satelit iklim, dan koordinat GPS lahan menjadi panduan aksi konkret. 
+            Membantu petani mengantisipasi anomali cuaca, menentukan masa tanam yang tepat, serta menekan risiko gagal panen hingga tingkat minimum.
+          </p>
+
+          {/* Stats Bar with Animated Counter */}
+          <div data-rv="up" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="story-glass p-8 rounded-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs uppercase tracking-widest text-emerald-400 font-medium">Petani Terdaftar</span>
+                <Activity size={18} className="text-emerald-400/80" />
               </div>
-              <span className="text-base font-medium text-[#09090b]">RamalTani</span>
+              <div
+                className="text-4xl md:text-5xl font-light text-white tracking-tight tabular-nums"
+                data-counter="45000"
+                data-suffix="+"
+              >
+                0+
+              </div>
+              <p className="text-xs text-neutral-400 mt-2">Tersebar di berbagai kelompok tani dan gabungan kelompok tani (Gapoktan).</p>
             </div>
-            <p className="max-w-xs text-sm leading-relaxed text-[#71717a]">
-              Platform pertanian cerdas berbasis data cuaca BMKG untuk petani Indonesia.
+
+            <div className="story-glass p-8 rounded-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs uppercase tracking-widest text-emerald-400 font-medium">Lahan Terpantau</span>
+                <Layers size={18} className="text-emerald-400/80" />
+              </div>
+              <div
+                className="text-4xl md:text-5xl font-light text-white tracking-tight tabular-nums"
+                data-counter="8200"
+                data-suffix=" ha"
+              >
+                0 ha
+              </div>
+              <p className="text-xs text-neutral-400 mt-2">Sawah irigasi, tadah hujan, dan perkebunan terpetakan secara geospasial.</p>
+            </div>
+
+            <div className="story-glass p-8 rounded-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs uppercase tracking-widest text-emerald-400 font-medium">Akurasi Prediksi</span>
+                <ShieldCheck size={18} className="text-emerald-400/80" />
+              </div>
+              <div
+                className="text-4xl md:text-5xl font-light text-white tracking-tight tabular-nums"
+                data-counter="94"
+                data-suffix="%"
+              >
+                0%
+              </div>
+              <p className="text-xs text-neutral-400 mt-2">Divalidasi dengan pengamatan stasiun klimatologi lokal di lapangan.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── CHAPTER 02: FITUR UNGGULAN ───────────────────────────────────── */}
+        <section id="fitur" className="max-w-6xl mx-auto">
+          <div data-rv="up" className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+            <Sparkles size={14} />
+            02 / Fitur Unggulan
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div>
+              <h2 data-rv="up" className="text-3xl md:text-5xl font-light text-white tracking-tight">
+                <WordMaskText text="Teknologi Modern Untuk Ketahanan Pangan" />
+              </h2>
+            </div>
+            <p data-rv="up" className="text-sm text-neutral-400 max-w-sm">
+              Tiga instrumen utama yang memudahkan Anda mengambil keputusan sebelum menabur benih atau menyemprot pupuk.
             </p>
           </div>
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-[#09090b]">Platform</h4>
-            <ul className="space-y-3">
-              {[
-                { label: 'Rekomendasi Tanam', to: '/dashboard/rekomendasi' },
-                { label: 'Peta Risiko', to: '/dashboard/peta-risiko' },
-                { label: 'Peringatan Dini', to: '/dashboard/peringatan' },
-                { label: 'Komunitas', to: '/dashboard/komunitas' },
-              ].map(item => (
-                <li key={item.label}>
-                  <Link to={item.to} className="text-sm text-[#71717a] hover:text-[#09090b] transition-colors">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-[#09090b]">Wilayah</h4>
-            <ul className="space-y-3">
-              {['Jawa Tengah', 'Jawa Timur', 'Jawa Barat', 'Lihat Semua'].map(item => (
-                <li key={item}><a href="#wilayah" className="text-sm text-[#71717a] hover:text-[#09090b] transition-colors">{item}</a></li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="mb-4 text-sm font-medium text-[#09090b]">Info</h4>
-            <ul className="space-y-3">
-              {['FAQ', 'Tentang Kami', 'Kontak', 'Kebijakan Privasi'].map(item => (
-                <li key={item}><a href="#" className="text-sm text-[#71717a] hover:text-[#09090b] transition-colors">{item}</a></li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-[#e4e4e7] px-6 py-6 md:px-12 lg:px-20">
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <p className="text-xs text-[#71717a]">© 2026 RamalTani. Seluruh hak dilindungi.</p>
-          <div className="flex items-center gap-5 text-xs text-[#71717a]">
-            <a href="#" className="hover:text-[#09090b] transition-colors">BMKG API</a>
-            <a href="#" className="hover:text-[#09090b] transition-colors">Open-Meteo</a>
-            <a href="#" className="hover:text-[#09090b] transition-colors">GitHub</a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
-// ─── Hero animation keyframes (inline) ───────────────────────────────────────
-const heroStyles = `
-  @keyframes heroSlideUp {
-    from { opacity: 0; transform: translateY(60px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes heroFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 0.7; }
-  }
-`;
+          {/* Staggered Pathway Cards (Kage Pathways style) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {/* Card 1 */}
+            <div data-rv="up" className="story-glass story-glass-hover p-8 rounded-3xl relative overflow-hidden group">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all">
+                <CloudSun size={24} />
+              </div>
+              <div className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 mb-2">01 / PARAMETER ATMOSFER</div>
+              <h3 className="text-2xl font-normal text-white mb-3">Prakiraan Cuaca 14 Hari</h3>
+              <p className="text-sm text-neutral-300 leading-relaxed font-light mb-6">
+                Prediksi suhu, kelembaban udara, intensitas curah hujan per jam, dan indeks radiasi UV hingga tingkat kecamatan.
+              </p>
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+                <span>Pembaruan BMKG</span>
+                <span className="text-emerald-400 font-medium">Per 3 Jam</span>
+              </div>
+            </div>
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-export default function LandingPage() {
-  return (
-    <div className="bg-white font-sans antialiased">
-      <style>{heroStyles}</style>
-      <Navbar />
-      <HeroSection />
-      <FeaturedSection />
-      <TechnologySection />
-      <GallerySection />
-      <HowItWorksSection />
-      <SpecBar />
-      <AboutSection />
-      <FAQSection />
-      <Footer />
+            {/* Card 2 (Staggered down +36px on desktop) */}
+            <div data-rv="up" className="story-glass story-glass-hover p-8 rounded-3xl relative overflow-hidden group md:translate-y-8">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-6 group-hover:scale-110 group-hover:bg-teal-500/20 transition-all">
+                <MapPin size={24} />
+              </div>
+              <div className="text-[10px] font-mono tracking-widest uppercase text-teal-400 mb-2">02 / GEOSPASIAL GIS</div>
+              <h3 className="text-2xl font-normal text-white mb-3">Peta Risiko & Kerentanan</h3>
+              <p className="text-sm text-neutral-300 leading-relaxed font-light mb-6">
+                Visualisasi interaktif zona potensi banjir genangan, kekeringan kritis, dan sebaran anomali cuaca di sekitar petak sawah.
+              </p>
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+                <span>Radius Radar</span>
+                <span className="text-teal-400 font-medium">Hingga 50 KM</span>
+              </div>
+            </div>
+
+            {/* Card 3 (Staggered down +72px on desktop) */}
+            <div data-rv="up" className="story-glass story-glass-hover p-8 rounded-3xl relative overflow-hidden group md:translate-y-16">
+              <div className="w-12 h-12 rounded-2xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-center text-lime-400 mb-6 group-hover:scale-110 group-hover:bg-lime-500/20 transition-all">
+                <TrendingUp size={24} />
+              </div>
+              <div className="text-[10px] font-mono tracking-widest uppercase text-lime-400 mb-2">03 / ADVISORY ENGINE</div>
+              <h3 className="text-2xl font-normal text-white mb-3">Rekomendasi Kalender Tanam</h3>
+              <p className="text-sm text-neutral-300 leading-relaxed font-light mb-6">
+                Rekomendasi spesifik komoditas (padi, jagung, cabai) mengenai tanggal semai, pencegahan jamur, dan efisiensi air.
+              </p>
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+                <span>Saran Adaptif</span>
+                <span className="text-lime-400 font-medium">Harian & Mingguan</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── CHAPTER 03: CARA MENGGUNAKAN (CURRICULUM FLOW) ───────────────── */}
+        <section id="cara-pakai" className="max-w-6xl mx-auto pt-16">
+          <div data-rv="up" className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+            <Compass size={14} />
+            03 / Alur Kerja
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end mb-14">
+            <div className="md:col-span-8">
+              <h2 data-rv="up" className="text-3xl md:text-5xl font-light text-white tracking-tight">
+                <WordMaskText text="Lima Langkah Menuju Pertanian Presisi" />
+              </h2>
+            </div>
+            <div className="md:col-span-4">
+              <p data-rv="up" className="text-sm text-neutral-300 font-light leading-relaxed">
+                Antarmuka dirancang seringan mungkin agar dapat diakses lancar melalui ponsel di pelosok pedesaan tanpa memerlukan perangkat mahal.
+              </p>
+            </div>
+          </div>
+
+          {/* Curriculum List (.les from Kage) */}
+          <div data-rv="up" className="story-glass rounded-3xl p-6 md:p-10 divide-y divide-white/10">
+            {[
+              {
+                step: '01',
+                title: 'Daftar Akun Gratis',
+                detail: 'Cukup masukkan nama, email, dan nomor telepon. Tanpa biaya langganan atau ikatan kontrak.',
+                tag: '2 MENIT',
+              },
+              {
+                step: '02',
+                title: 'Tandai Koordinat Petak Lahan',
+                detail: 'Gunakan fitur GPS otomatis pada ponsel Anda atau tentukan pin lokasi sawah pada peta satelit.',
+                tag: 'OTOMATIS',
+              },
+              {
+                step: '03',
+                title: 'Sinkronisasi Radar Cuaca BMKG',
+                detail: 'Sistem langsung menghubungkan lahan Anda ke radar stasiun meteorologi terdekat secara real-time.',
+                tag: 'INSTAN',
+              },
+              {
+                step: '04',
+                title: 'Dapatkan Rekomendasi Tanam & Pemupukan',
+                detail: 'Ketahui jendela hari kering untuk menjemur atau menyemprot, serta prakiraan hujan untuk efisiensi irigasi.',
+                tag: 'HARIAN',
+              },
+              {
+                step: '05',
+                title: 'Pantau Perkembangan & Catat Panen',
+                detail: 'Evaluasi hasil panen musim demi musim dan bandingkan produktivitas dengan musim sebelumnya.',
+                tag: 'BERKELANJUTAN',
+              },
+            ].map((item, idx) => (
+              <div key={idx} className="les group">
+                <div className="bar" />
+                <span className="k font-mono font-semibold">{item.step}</span>
+                <div>
+                  <h3 className="text-lg md:text-xl font-normal text-white group-hover:text-emerald-300 transition-colors">
+                    {item.title}
+                  </h3>
+                </div>
+                <p className="text-sm text-neutral-400 font-light">
+                  {item.detail}
+                </p>
+                <div className="text-right">
+                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 group-hover:border-emerald-500/40 group-hover:text-emerald-300 transition-colors">
+                    {item.tag}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── CHAPTER 04: WILAYAH CAKUPAN ─────────────────────────────────── */}
+        <section id="wilayah" className="max-w-6xl mx-auto">
+          <div data-rv="up" className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+            <Globe2 size={14} />
+            04 / Cakupan Wilayah
+          </div>
+
+          <h2 data-rv="up" className="text-3xl md:text-5xl font-light text-white tracking-tight mb-6">
+            <WordMaskText text="Melindungi Lumbung Pangan Nusantara" />
+          </h2>
+
+          <p data-rv="up" className="text-base md:text-lg text-neutral-300 font-light leading-relaxed max-w-3xl mb-12">
+            RamalTani aktif mendampingi kelompok tani di sentra-sentra produksi pangan utama Indonesia, 
+            menyatukan data topografi lahan dan jaringan stasiun klimatologi daerah.
+          </p>
+
+          <div data-rv="up" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                region: 'Jawa & Madura',
+                areas: 'Karawang, Subang, Indramayu, Sragen, Banyuwangi',
+                stats: '24.500+ Petani',
+                tag: 'Sentra Padi Utama',
+              },
+              {
+                region: 'Sumatera',
+                areas: 'Deli Serdang, Lampung Selatan, Banyuasin, Solok',
+                stats: '11.200+ Petani',
+                tag: 'Pangan & Hortikultura',
+              },
+              {
+                region: 'Bali & Nusa Tenggara',
+                areas: 'Tabanan, Gianyar, Lombok Tengah, Sumbawa',
+                stats: '6.400+ Petani',
+                tag: 'Sistem Subak & Palawija',
+              },
+              {
+                region: 'Sulawesi & Sekitarnya',
+                areas: 'Sidrap, Bone, Pinrang, Gowa',
+                stats: '5.800+ Petani',
+                tag: 'Lumbung Timur Nusantara',
+              },
+            ].map((reg, i) => (
+              <div key={i} className="story-glass story-glass-hover p-6 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 mb-2">
+                    {reg.tag}
+                  </div>
+                  <h4 className="text-xl font-normal text-white mb-2">{reg.region}</h4>
+                  <p className="text-xs text-neutral-400 leading-relaxed">{reg.areas}</p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-xs text-neutral-400">Pengguna</span>
+                  <span className="text-xs font-semibold text-emerald-300">{reg.stats}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── CHAPTER 05: MULAI SEKARANG (FULLSCREEN CTA + FOOTER) ─────────── */}
+        <section id="mulai" className="max-w-6xl mx-auto pt-10">
+          <div data-rv="up" className="story-glass p-10 md:p-20 rounded-3xl text-center relative overflow-hidden">
+            {/* Ambient emerald background glow */}
+            <div
+              className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/15 blur-[120px]"
+              aria-hidden="true"
+            />
+
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-6">
+                05 / Gerakan Pertanian Berkelanjutan
+              </div>
+
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-light text-white tracking-tight mb-6">
+                Mulai Mengelola Lahan dengan Keyakinan Data
+              </h2>
+
+              <p className="text-base md:text-lg text-neutral-300 font-light leading-relaxed mb-10">
+                Bergabunglah bersama ribuan petani modern lainnya. Daftar dalam beberapa menit dan nikmati akses prakiraan cuaca 14 hari serta peta risiko gratis.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  to="/register"
+                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm tracking-wide shadow-xl shadow-emerald-950/60 hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <span>Daftar Sekarang — Gratis</span>
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-neutral-200 hover:text-white font-medium text-sm tracking-wide transition-all"
+                >
+                  Masuk ke Dashboard
+                </Link>
+              </div>
+
+              {/* Trust checklist */}
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-neutral-400">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                  <span>Tanpa Biaya Langganan</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                  <span>Data Resmi BMKG Terintegrasi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                  <span>Dukungan Komunitas Petani</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer className="mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-neutral-400">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-md bg-emerald-600 flex items-center justify-center">
+                <Leaf size={14} className="text-white" />
+              </div>
+              <span className="font-medium text-neutral-200">RamalTani Indonesia</span>
+              <span>— Platform Rekomendasi Pertanian Berbasis Cuaca Presisi</span>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <Link to="/login" className="hover:text-emerald-400 transition-colors">Masuk</Link>
+              <Link to="/register" className="hover:text-emerald-400 transition-colors">Daftar</Link>
+              <a 
+                href="https://www.bmkg.go.id" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="hover:text-emerald-400 transition-colors"
+              >
+                Sumber Data: BMKG
+              </a>
+            </div>
+          </footer>
+        </section>
+
+      </div>
     </div>
   );
 }

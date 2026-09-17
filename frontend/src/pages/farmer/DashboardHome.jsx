@@ -20,10 +20,14 @@ import {
 function Greeting({ user, locationName, coords, onOpenGPS }) {
   const hour = new Date().getHours();
   const greet = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : 'Selamat Sore';
+  const emoji = hour < 11 ? '🌅' : hour < 15 ? '☀️' : '🌤️';
 
   return (
-    <div className="mb-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+    <div className="mb-8 relative">
+      {/* Background accent gradient */}
+      <div className="absolute -inset-4 bg-gradient-to-br from-emerald-50/60 via-transparent to-transparent rounded-3xl pointer-events-none" />
+
+      <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
         <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium">
           Pusat Kendali Petani · {coords?.isGPS ? coords.regionName : (user?.location || locationName || 'Klaten, Jawa Tengah')}
         </p>
@@ -31,24 +35,29 @@ function Greeting({ user, locationName, coords, onOpenGPS }) {
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenGPS}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-emerald-50 text-[#09090b] border border-[#e4e4e7] hover:border-emerald-300 transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white hover:bg-emerald-50 text-[#09090b] border border-[#e4e4e7] hover:border-emerald-300 transition-all shadow-sm"
             title="Sinkronkan sensor lokasi GPS"
           >
             <Crosshair size={12} className={coords?.isGPS ? "text-emerald-600 animate-pulse" : "text-[#71717a]"} />
             <span>{coords?.isGPS ? 'GPS Aktif' : 'Sinkronkan GPS'}</span>
           </button>
 
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot" />
             BMKG Live
           </span>
         </div>
       </div>
 
-      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]">
-        {greet}, {user?.name?.split(' ')[0] || 'Petani'}.
-      </h1>
-      <p className="text-base sm:text-lg text-[#71717a] mt-2 max-w-xl leading-relaxed">
+      <div className="relative">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-[#09090b] leading-[1.08]" style={{ animation: 'heroSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}>
+          {greet} {emoji},
+        </h1>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.08] bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 bg-clip-text text-transparent" style={{ animation: 'heroSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.22s both' }}>
+          {user?.name?.split(' ')[0] || 'Petani'}.
+        </h1>
+      </div>
+      <p className="text-base sm:text-lg text-[#71717a] mt-3 max-w-xl leading-relaxed" style={{ animation: 'heroSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both' }}>
         Komoditas utama Anda <strong className="text-[#09090b] font-medium">{user?.commodity || 'Padi Sawah'}</strong>. Iklim dasarian ini terpantau mendukung aktivitas lapangan.
       </p>
     </div>
@@ -84,43 +93,68 @@ function AlertBanner({ alert }) {
   );
 }
 
-// ─── Signature Evasion 4-Column Specs Grid ────────────────────────────────────
+// ─── Signature Evasion 4-Column Specs Grid (upgraded with gradient accents) ──
 function ClimateSpecsGrid({ weather }) {
   const current = weather?.current || {};
+  const rain = current.rainProbability ?? 20;
+  const rainColor = rain > 70 ? 'text-rose-600' : rain > 40 ? 'text-amber-600' : 'text-emerald-700';
+
+  const specs = [
+    {
+      label: 'Suhu Udara Lahan',
+      value: current.temperature ?? 28,
+      unit: '°C',
+      sub: current.description || 'Cerah Berawan',
+      color: 'text-sky-600',
+      bg: 'bg-sky-50',
+      delay: '0.05s',
+    },
+    {
+      label: 'Peluang Hujan',
+      value: rain,
+      unit: '%',
+      sub: rain > 70 ? 'Probabilitas Tinggi' : rain > 40 ? 'Probabilitas Sedang' : 'Probabilitas Rendah',
+      color: rainColor,
+      bg: rain > 70 ? 'bg-rose-50' : rain > 40 ? 'bg-amber-50' : 'bg-emerald-50',
+      delay: '0.10s',
+    },
+    {
+      label: 'Kelembapan Udara',
+      value: current.humidity ?? 75,
+      unit: '%',
+      sub: `Angin ${current.windSpeed ?? 10} km/jam`,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      delay: '0.15s',
+    },
+    {
+      label: 'Kesesuaian Tanam',
+      value: 88,
+      unit: '%',
+      sub: 'Indeks Iklim Optimal',
+      color: 'text-emerald-700',
+      bg: 'bg-emerald-50',
+      delay: '0.20s',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 border-y border-[#e4e4e7] divide-y md:divide-y-0 md:divide-x divide-[#e4e4e7] my-8 bg-white reveal-up">
-      <div className="p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2 font-medium">Suhu Udara Lahan</p>
-        <p className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#09090b]">
-          {current.temperature ?? 28}<span className="text-xl font-light text-[#71717a]">°C</span>
-        </p>
-        <p className="text-xs text-[#71717a] font-mono mt-1.5">{current.description || 'Cerah Berawan'}</p>
-      </div>
-
-      <div className="p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2 font-medium">Peluang Hujan</p>
-        <p className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#09090b]">
-          {current.rainProbability ?? 20}<span className="text-xl font-light text-[#71717a]">%</span>
-        </p>
-        <p className="text-xs text-emerald-700 font-mono mt-1.5 font-medium">Probabilitas Rendah</p>
-      </div>
-
-      <div className="p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2 font-medium">Kelembapan Udara</p>
-        <p className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#09090b]">
-          {current.humidity ?? 75}<span className="text-xl font-light text-[#71717a]">%</span>
-        </p>
-        <p className="text-xs text-[#71717a] font-mono mt-1.5">Angin {current.windSpeed ?? 10} km/jam</p>
-      </div>
-
-      <div className="p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2 font-medium">Kesesuaian Tanam</p>
-        <p className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-emerald-700">
-          88<span className="text-xl font-light">%</span>
-        </p>
-        <p className="text-xs text-[#71717a] font-mono mt-1.5">Indeks Iklim Optimal</p>
-      </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 border-y border-[#e4e4e7] divide-y md:divide-y-0 md:divide-x divide-[#e4e4e7] my-8">
+      {specs.map((s, i) => (
+        <div
+          key={i}
+          className={`card-enter card-enter-${i + 1} p-6 text-center relative overflow-hidden group hover:${s.bg} transition-colors duration-300`}
+        >
+          <div className={`absolute inset-0 ${s.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <div className="relative z-10">
+            <p className="text-xs uppercase tracking-widest text-[#71717a] mb-2 font-medium">{s.label}</p>
+            <p className={`text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight ${s.color}`}>
+              {s.value}<span className="text-xl font-light text-[#71717a]">{s.unit}</span>
+            </p>
+            <p className="text-xs text-[#71717a] font-mono mt-1.5">{s.sub}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -130,7 +164,11 @@ function RecommendationCard({ rec, weatherLocation }) {
   const r = rec?.recommendation || rec || {};
 
   return (
-    <div className="rounded-2xl bg-white border border-[#e4e4e7] p-6 sm:p-8 shadow-xs relative overflow-hidden" role="region" aria-label="Rekomendasi tanam utama">
+    <div className="rounded-2xl border border-emerald-200/80 p-6 sm:p-8 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #f0fdfa 100%)' }} role="region" aria-label="Rekomendasi tanam utama">
+      {/* Decorative top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-600" />
+      {/* Decorative glow */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-100/30 rounded-full -translate-y-24 translate-x-24 pointer-events-none" />
       <div className="relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
@@ -341,7 +379,7 @@ export default function DashboardHome() {
 
   return (
     <div ref={containerRef} className="text-[#09090b] page-enter">
-      {/* Clean Editorial Greeting */}
+      {/* Animated Greeting */}
       <Greeting
         user={user}
         locationName={weather?.location?.name}
@@ -352,27 +390,30 @@ export default function DashboardHome() {
       {/* Active alert banner */}
       {alerts[0] && <AlertBanner alert={alerts[0]} />}
 
-      {/* Signature Evasion Specs 4-Column Grid */}
+      {/* Climate Specs Grid with hover animations */}
       <ClimateSpecsGrid weather={weather} />
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* 1. MAIN RECOMMENDATION CARD */}
-        <div className="reveal-up">
+        <div className="card-enter card-enter-1">
           <RecommendationCard rec={recommendation} weatherLocation={weather?.location?.name} />
         </div>
 
         {/* 2. WEATHER FORECAST & FIELD ACTIONS */}
-        <div className="grid lg:grid-cols-3 gap-6 reveal-up">
+        <div className="grid lg:grid-cols-3 gap-5 card-enter card-enter-2">
           <div className="lg:col-span-2">
             <ForecastTimeline weather={weather} />
           </div>
 
-          {/* Today's action panel */}
-          <div className="rounded-2xl bg-white border border-[#e4e4e7] p-6 shadow-xs flex flex-col justify-between gap-6">
+          {/* Today's action panel — with gradient accent */}
+          <div className="rounded-2xl border border-[#e4e4e7] p-6 flex flex-col justify-between gap-6 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #fafafa 0%, #ffffff 100%)' }}>
+            {/* Accent dot decoration */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-400 to-emerald-500" />
+
             <div>
               <p className="text-xs uppercase tracking-widest text-[#71717a] font-medium mb-1">Panduan Tindakan</p>
               <h3 className="font-medium text-lg text-[#09090b] mb-3">Pekerjaan Lapangan Hari Ini</h3>
-              <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200">
                 <div className="flex items-start gap-2.5">
                   <Sprout size={18} className="text-emerald-700 flex-shrink-0 mt-0.5" />
                   <p className="text-xs font-medium text-emerald-950 leading-relaxed">
@@ -391,17 +432,21 @@ export default function DashboardHome() {
                   { msg: `Suhu wilayah ${weather?.location?.name || 'Klaten'} saat ini ${weather?.current?.temperature || 28}°C (${weather?.current?.description || 'Cerah Berawan'})`, unread: true },
                   { msg: 'Rekomendasi tanam telah disinkronkan dengan BMKG', unread: false },
                 ].map((n, i) => (
-                  <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-[#fafafa] border border-[#e4e4e7] hover:border-emerald-200 transition-colors">
-                    {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 flex-shrink-0" />}
+                  <div key={i} className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all duration-200 ${
+                    n.unread
+                      ? 'bg-emerald-50/60 border-emerald-200 hover:border-emerald-400'
+                      : 'bg-[#fafafa] border-[#e4e4e7] hover:border-emerald-200'
+                  }`}>
+                    {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot flex-shrink-0" />}
                     <span className={`text-xs flex-1 leading-snug ${n.unread ? 'font-medium text-[#09090b]' : 'text-[#71717a]'}`}>
                       {n.msg}
                     </span>
                   </div>
                 ))}
               </div>
-              <Link to="/dashboard/peringatan" className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-medium mt-3 hover:text-emerald-800 transition-colors">
+              <Link to="/dashboard/peringatan" className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-semibold mt-3 hover:text-emerald-800 transition-colors group">
                 <span>Lihat semua peringatan</span>
-                <ArrowRight size={12} />
+                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </div>

@@ -252,6 +252,31 @@
   .source-badge {
     @apply inline-flex items-center gap-1 text-xs text-[#71717a];
   }
+
+  /* ── Dashboard cards dengan gradient accent ─── */
+  .dash-stat-card {
+    @apply relative overflow-hidden rounded-2xl bg-white border border-[#e4e4e7] p-5 shadow-sm
+           transition-all duration-300 hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .dash-stat-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: radial-gradient(ellipse at top left, rgba(16,185,129,0.05) 0%, transparent 70%);
+  }
+
+  .dash-stat-card:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Glassmorphism card for dashboard highlights */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(228, 228, 231, 0.8);
+    border-radius: 16px;
+  }
 }
 
 /* ─── Utilities ────────────────────────────────────────────────────────────── */
@@ -268,9 +293,13 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .will-change-transform {
+    will-change: transform;
+  }
 }
 
-/* ─── Animations ───────────────────────────────────────────────────────────── */
+/* ─── Core Keyframes ────────────────────────────────────────────────────────── */
 @keyframes skeleton-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -286,7 +315,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Evasion-style Scroll Reveal System ───────────────────────────────────── */
+/* ─── EVASION Hero: Letter-by-letter slide-up ───────────────────────────────── */
+@keyframes heroSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 0.6; transform: translateY(0); }
+}
+
+/* Single letter burst-up for RAMAL TANI */
+@keyframes letterSlideUp {
+  0%   { opacity: 0; transform: translateY(100%) rotate(3deg); }
+  60%  { opacity: 1; transform: translateY(-4%) rotate(-0.5deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg); }
+}
+
+/* ─── EVASION-style Scroll Reveal System ───────────────────────────────────── */
 
 /* Base: semua reveal element mulai tersembunyi */
 .reveal {
@@ -307,9 +360,9 @@
 /* Slide dari kiri (Evasion: featured card kiri) */
 .reveal-left {
   opacity: 0;
-  transform: translate3d(-80px, 0, 0);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(-100%, 0, 0);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1s cubic-bezier(0.16, 1, 0.3, 1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -317,9 +370,9 @@
 /* Slide dari kanan (Evasion: featured card kanan) */
 .reveal-right {
   opacity: 0;
-  transform: translate3d(80px, 0, 0);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(100%, 0, 0);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 1s cubic-bezier(0.16, 1, 0.3, 1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -337,9 +390,23 @@
   opacity: 0;
   filter: blur(8px);
   transform: translateY(8px);
-  transition: opacity 0.6s ease-out,
-              filter 0.6s ease-out,
-              transform 0.6s ease-out;
+  transition: opacity 0.7s ease-out,
+              filter 0.7s ease-out,
+              transform 0.7s ease-out;
+}
+
+/* Word-by-word blur (EVASION Technology section) */
+.word-blur {
+  opacity: 0;
+  filter: blur(6px);
+  transition: opacity 0.15s linear, filter 0.15s linear;
+  display: inline-block;
+  margin-right: 0.3em;
+}
+
+.word-blur.lit {
+  opacity: 1;
+  filter: blur(0px);
 }
 
 /* Active state — semua reveal menjadi visible */
@@ -355,27 +422,122 @@
 }
 
 /* Stagger delays untuk grid items */
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-.reveal-delay-5 { transition-delay: 0.5s; }
-.reveal-delay-6 { transition-delay: 0.6s; }
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-delay-3 { transition-delay: 0.24s; }
+.reveal-delay-4 { transition-delay: 0.32s; }
+.reveal-delay-5 { transition-delay: 0.40s; }
+.reveal-delay-6 { transition-delay: 0.48s; }
 
 /* ─── Dashboard page-level fade in ─────────────────────────────────────────── */
 .page-enter {
-  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes pageEnter {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ─── Dashboard micro-animations ───────────────────────────────────────────── */
+
+/* Stat counter pop */
+@keyframes statPop {
+  0%   { opacity: 0; transform: scale(0.7) translateY(10px); }
+  70%  { opacity: 1; transform: scale(1.05) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.stat-pop {
+  animation: statPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Shimmer gradient on cards */
+@keyframes shimmerSlide {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Pulse green dot */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+.pulse-dot {
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* Card entrance with stagger for dashboard */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter { animation: cardEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.card-enter-1 { animation-delay: 0.05s; opacity: 0; }
+.card-enter-2 { animation-delay: 0.10s; opacity: 0; }
+.card-enter-3 { animation-delay: 0.15s; opacity: 0; }
+.card-enter-4 { animation-delay: 0.20s; opacity: 0; }
+.card-enter-5 { animation-delay: 0.25s; opacity: 0; }
+.card-enter-6 { animation-delay: 0.30s; opacity: 0; }
+
+/* Gradient border animation for active cards */
+@keyframes gradientBorder {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Floating nav scroll cue bounce ────────────────────────────────────────── */
+@keyframes bounceSoft {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+.bounce-soft {
+  animation: bounceSoft 2s ease-in-out infinite;
+}
+
+/* ─── Admin Dashboard specific ──────────────────────────────────────────────── */
+.admin-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #0f172a 100%);
+  background-size: 400% 400%;
+  animation: adminBgShift 12s ease-in-out infinite;
+}
+
+@keyframes adminBgShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Terminal blink cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #10b981;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
 }
 
 /* ─── Leaflet overrides ─────────────────────────────────────────────────────── */
@@ -409,3 +571,135 @@
   border-radius: 8px !important;
 }
 
+/* ─── Kage-inspired Scroll Story System (Living Green / Three.js Theme) ───────── */
+[data-rv] {
+  opacity: 0;
+}
+[data-rv="up"] {
+  transform: translate3d(0, 32px, 0);
+}
+[data-rv="fade"] {
+  transform: none;
+}
+[data-rv].rv-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity .9s cubic-bezier(.16, 1, .3, 1), transform 1.05s cubic-bezier(.16, 1, .3, 1);
+}
+
+/* Word Mask reveal */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  margin-right: 0.26em;
+}
+.word {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 112%, 0);
+  will-change: transform, opacity;
+  transition: transform .85s cubic-bezier(.16, 1, .3, 1), opacity .55s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: var(--word-delay, 0ms);
+}
+.rv-in .word,
+.word-reveal.rv-in .word {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Scroll Cue animation */
+@keyframes cueLine {
+  0% { transform: scaleX(0); transform-origin: left; }
+  45% { transform: scaleX(1); transform-origin: left; }
+  50% { transform: scaleX(1); transform-origin: right; }
+  95% { transform: scaleX(0); transform-origin: right; }
+  100% { transform: scaleX(0); transform-origin: left; }
+}
+.animate-cue {
+  animation: cueLine 2.8s cubic-bezier(.65, 0, .35, 1) infinite;
+}
+
+/* Glassmorphic story cards */
+.story-glass {
+  background: rgba(24, 29, 23, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.story-glass-hover {
+  transition: transform .45s cubic-bezier(.16, 1, .3, 1), border-color .4s ease, box-shadow .45s ease;
+}
+.story-glass-hover:hover {
+  transform: translateY(-6px);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Kage curriculum list (.les) */
+.les {
+  position: relative;
+  display: grid;
+  align-items: center;
+  grid-template-columns: 56px minmax(0, 1.1fr) minmax(0, 1.4fr) 96px;
+  gap: clamp(14px, 2.4vw, 36px);
+  padding: clamp(20px, 2.2vw, 30px) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: padding .45s cubic-bezier(.16, 1, .3, 1);
+}
+.les::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent 52%);
+  opacity: 0;
+  transition: opacity .45s ease;
+  pointer-events: none;
+  border-radius: 8px;
+}
+.les:hover::before {
+  opacity: 1;
+}
+.les:hover {
+  padding-left: 14px;
+}
+.les .k {
+  font-size: 12px;
+  letter-spacing: .18em;
+  color: rgba(255, 255, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+  transition: color .4s;
+}
+.les:hover .k {
+  color: #34d399;
+}
+.les .bar {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .65s cubic-bezier(.16, 1, .3, 1);
+}
+.les:hover .bar {
+  transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+  .les {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .les p {
+    display: none;
+  }
+}
